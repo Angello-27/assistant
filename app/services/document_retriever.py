@@ -1,7 +1,7 @@
-from langchain.document_loaders import DirectoryLoader, TextLoader
-from langchain.embeddings.openai import OpenAIEmbeddings
-from langchain.vectorstores import FAISS
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_community.document_loaders import DirectoryLoader, TextLoader
+from langchain_community.embeddings import OpenAIEmbeddings
+from langchain_community.vectorstores import FAISS
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 
 def load_documents(directory_path: str):
@@ -42,8 +42,8 @@ def process_query_with_retrieval(query: str, vector_store) -> str:
     """
     Usa un retrieval chain que primero busca documentos relevantes y luego genera una respuesta.
     """
-    from langchain.llms import OpenAI
-    from langchain.chains import RetrievalQA
+    from langchain_openai import OpenAI
+    from langchain_community.chains import RetrievalQA
 
     llm = OpenAI(temperature=0.7)
     retrieval_chain = RetrievalQA.from_chain_type(
