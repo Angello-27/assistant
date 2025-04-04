@@ -1,17 +1,20 @@
 from fastapi import APIRouter, HTTPException
 from app.models.query import QueryRequest
-from app.services.transit_knowledge_service import TransitKnowledgeService
+from app.services.query_service import QueryService
+from app.services.document_retriever import DocumentRetriever
 
 router = APIRouter()
 
-# Instancia el servicio, indicando el directorio de documentos (asegúrate de que la carpeta 'documents' esté en la raíz del proyecto)
-knowledge_service = TransitKnowledgeService(documents_directory="documents")
+# Instanciar DocumentRetriever con la ruta de tu carpeta de documentos
+document_retriever = DocumentRetriever(directory_path="documents")
+# Instanciar QueryService inyectando el document_retriever
+query_service = QueryService(document_retriever=document_retriever)
 
 
 @router.post("/ask")
 async def ask_question(request: QueryRequest, use_retrieval: bool = True):
     try:
-        answer = knowledge_service.query(request.query, use_retrieval=use_retrieval)
+        answer = query_service.query(request.query, use_retrieval=use_retrieval)
         return {"answer": answer}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
