@@ -11,11 +11,11 @@ from app.core.config import settings
 # Configurar la API key de OpenAI
 openai.api_key = settings.OPENAI_API_KEY
 
-# ========================
+# ------------------------
 # Procesamiento directo sin búsqueda documental
-# ========================
+# ------------------------
 
-# Definir un prompt orientado a la normativa de tránsito de Bolivia
+# Definir el prompt orientado a la normativa de tránsito de Bolivia
 prompt_template = """
 Eres un asistente legal especializado en el Código de Tránsito de Bolivia.
 Responde de forma clara y concisa a la siguiente consulta:
@@ -30,15 +30,13 @@ chain = LLMChain(llm=llm, prompt=prompt)
 
 
 def process_query(query: str) -> str:
-    """
-    Procesa la consulta utilizando la cadena básica de LangChain.
-    """
+    """Procesa la consulta utilizando la cadena básica de LangChain."""
     return chain.run(query=query)
 
 
-# ========================
-# Procesamiento con recuperación de documentos locales
-# ========================
+# ------------------------
+# Funciones de procesamiento con recuperación de documentos locales
+# ------------------------
 
 
 def load_documents(directory_path: str):
@@ -66,17 +64,17 @@ def process_query_with_retrieval(query: str, vector_store) -> str:
     """
     retrieval_chain = RetrievalQA.from_chain_type(
         llm=llm,
-        chain_type="stuff",  # O puedes probar con "map_reduce" según tus necesidades
+        chain_type="stuff",  # Puedes probar con otros tipos de chain, como "map_reduce"
         retriever=vector_store.as_retriever(),
-        return_source_documents=True,  # Opcional: para obtener también las fuentes
+        return_source_documents=True,  # Opcional, para devolver también las fuentes
     )
     result = retrieval_chain.run(query)
     return result
 
 
-# ========================
-# Clase para encapsular la lógica de conocimiento de tránsito
-# ========================
+# ------------------------
+# Clase que encapsula la lógica de conocimiento de tránsito
+# ------------------------
 
 
 class TransitKnowledgeService:
@@ -88,8 +86,8 @@ class TransitKnowledgeService:
     def query(self, query: str, use_retrieval: bool = True) -> str:
         """
         Procesa una consulta:
-          - Si use_retrieval es True, utiliza la búsqueda en documentos locales.
-          - De lo contrario, procesa la consulta de forma directa.
+         - Si use_retrieval es True, utiliza la búsqueda en documentos locales.
+         - De lo contrario, procesa la consulta de forma directa.
         """
         if use_retrieval:
             return process_query_with_retrieval(query, self.vector_store)
