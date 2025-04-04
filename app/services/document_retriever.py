@@ -1,9 +1,7 @@
 from langchain.document_loaders import DirectoryLoader, TextLoader
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.vectorstores import FAISS
-from langchain.text_splitter import (
-    RecursiveCharacterTextSplitter,
-)  # Importamos el text splitter
+from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 
 def load_documents(directory_path: str):
@@ -11,7 +9,12 @@ def load_documents(directory_path: str):
     Carga todos los documentos de texto del directorio especificado.
     Se asume que los documentos están en formato .txt.
     """
-    loader = DirectoryLoader(directory_path, glob="*.txt", loader_cls=TextLoader)
+    loader = DirectoryLoader(
+        directory_path,
+        glob="*.txt",
+        loader_cls=TextLoader,
+        loader_kwargs={"encoding": "utf-8"},
+    )
     return loader.load()
 
 

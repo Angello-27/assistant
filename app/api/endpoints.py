@@ -6,7 +6,7 @@ from app.services.document_retriever import DocumentRetriever
 router = APIRouter()
 
 # Instanciar DocumentRetriever con la ruta de tu carpeta de documentos
-document_retriever = DocumentRetriever(directory_path="documents")
+document_retriever = DocumentRetriever(documents_directory="documents")
 # Instanciar QueryService inyectando el document_retriever
 query_service = QueryService(document_retriever=document_retriever)
 
