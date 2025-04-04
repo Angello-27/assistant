@@ -40,19 +40,32 @@ def build_vector_store(documents):
 
 def process_query_with_retrieval(query: str, vector_store) -> str:
     """
-    Usa un retrieval chain que primero busca documentos relevantes y luego genera una respuesta.
+    Usa el nuevo enfoque LCEL para buscar documentos relevantes en el vector store y
+    generar una respuesta a partir de ellos.
     """
-    from langchain_openai import OpenAI
-    from langchain_community.chains import RetrievalQA
+    from langchain import hub
+    from langchain.chains.combine_documents import create_stuff_documents_chain
+    from langchain.chains import create_retrieval_chain
+    from langchain_openai import ChatOpenAI
 
-    llm = OpenAI(temperature=0.7)
-    retrieval_chain = RetrievalQA.from_chain_type(
-        llm=llm,
-        chain_type="stuff",  # Puedes ajustar el tipo de chain según tus necesidades
-        retriever=vector_store.as_retriever(),
-        return_source_documents=True,  # Opcional: para obtener también las fuentes
-    )
-    result = retrieval_chain.run(query)
+    # Extrae un prompt de ejemplo desde hub (puedes personalizarlo o definir el tuyo propio)
+    retrieval_qa_chat_prompt = hub.pull("langchain-ai/retrieval-qa-chat")
+
+    # Inicializa un modelo de chat (ChatOpenAI suele ser la opción recomendada para prompts conversacionales)
+    llm = ChatOpenAI(temperature=0.7)
+
+    # Crea una cadena para combinar documentos usando el prompt obtenido
+    combine_docs_chain = create_stuff_documents_chain(llm, retrieval_qa_chat_prompt)
+
+    # Crea la cadena de recuperación, pasando el retriever del vector store y la cadena de combinación de documentos
+    rag_chain = create_retrieval_chain(vector_store.as_retriever(), combine_docs_chain)
+
+    # Invoca la cadena con el input; el resultado puede ser un dict que incluya la respuesta en la clave "text"
+    result = rag_chain.invoke({"input": query})
+
+    # Si el resultado es un diccionario y contiene la clave "text", se extrae esa respuesta
+    if isinstance(result, dict) and "text" in result:
+        return result["text"]
     return result
 
 
