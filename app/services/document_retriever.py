@@ -1,6 +1,9 @@
 from langchain.document_loaders import DirectoryLoader, TextLoader
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.vectorstores import FAISS
+from langchain.text_splitter import (
+    RecursiveCharacterTextSplitter,
+)  # Importamos el text splitter
 
 
 def load_documents(directory_path: str):
@@ -10,6 +13,18 @@ def load_documents(directory_path: str):
     """
     loader = DirectoryLoader(directory_path, glob="*.txt", loader_cls=TextLoader)
     return loader.load()
+
+
+def load_and_split_documents(directory_path: str):
+    """
+    Carga y divide en fragmentos los documentos de texto del directorio especificado.
+    """
+    docs = load_documents(directory_path)
+    # Configura el text splitter: chunk_size es el tamaño máximo del fragmento,
+    # chunk_overlap es la cantidad de caracteres que se solapan entre fragmentos.
+    splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=100)
+    split_docs = splitter.split_documents(docs)
+    return split_docs
 
 
 def build_vector_store(documents):
@@ -34,13 +49,14 @@ def process_query_with_retrieval(query: str, vector_store) -> str:
         retriever=vector_store.as_retriever(),
         return_source_documents=True,  # Opcional: para obtener también las fuentes
     )
-    return retrieval_chain.run(query)
+    result = retrieval_chain.run(query)
+    return result
 
 
 class DocumentRetriever:
-    def __init__(self, directory_path: str):
-        # Cargar documentos y construir el vector store
-        self.documents = load_documents(directory_path)
+    def __init__(self, documents_directory: str):
+        # Carga y divide documentos en fragmentos desde el directorio indicado
+        self.documents = load_and_split_documents(documents_directory)
         self.vector_store = build_vector_store(self.documents)
 
     def retrieve(self, query: str) -> str:
