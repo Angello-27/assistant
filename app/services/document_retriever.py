@@ -1,5 +1,5 @@
 from langchain_community.document_loaders import DirectoryLoader, TextLoader
-from langchain_community.embeddings import OpenAIEmbeddings
+from langchain_openai import OpenAIEmbeddings
 from langchain_community.vectorstores import FAISS
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 

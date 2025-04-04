@@ -1,7 +1,7 @@
 import openai
 from langchain_openai import OpenAI
-from langchain_community.llms import LLMChain
 from langchain.prompts import PromptTemplate
+from langchain_core.output_parsers import StrOutputParser
 from app.core.config import settings
 
 # Configurar la API key de OpenAI
@@ -14,11 +14,15 @@ Responde de forma clara y concisa a la siguiente consulta:
 Pregunta: {query}
 Respuesta:
 """
+# Usamos PromptTemplate de langchain.prompts (si es necesario, podrías migrar a ChatPromptTemplate si usas un modelo de chat)
 prompt = PromptTemplate(template=prompt_template, input_variables=["query"])
 
-# Inicializar el modelo de lenguaje y la cadena básica para procesamiento directo
+# Inicializar el modelo de lenguaje (ChatOpenAI u OpenAI, según prefieras)
 llm = OpenAI(temperature=0.7)
-chain = LLMChain(llm=llm, prompt=prompt)
+
+# Crear la nueva cadena usando LCEL: componemos el prompt, el modelo y un parser que extraiga el texto
+# Esto reemplaza el uso de LLMChain legacy.
+chain = prompt | llm | StrOutputParser()
 
 
 class QueryService:
@@ -31,12 +35,14 @@ class QueryService:
 
     def query(self, query: str, use_retrieval: bool = True) -> str:
         """
-        Procesa la consulta:
+        Procesa una consulta:
           - Si use_retrieval es True y se ha proporcionado un document_retriever,
             se utiliza la búsqueda en documentos locales.
-          - De lo contrario, se procesa la consulta de forma directa.
+          - De lo contrario, se procesa la consulta de forma directa usando la nueva cadena LCEL.
         """
         if use_retrieval and self.document_retriever:
             return self.document_retriever.retrieve(query)
         else:
-            return chain.run(query=query)
+            # Invoca la nueva cadena LCEL pasando un diccionario con el valor de "query"
+            result = chain.invoke({"query": query})
+            return result
