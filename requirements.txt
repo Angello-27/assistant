@@ -1,3 +1,6 @@
+thinc
+numpy
+pydantic-settings
 fastapi
 uvicorn
 openai
@@ -8,6 +11,6 @@ python-dotenv
 tiktoken
 faiss-cpu
 langchain-text-splitters
-spacy==3.6.1
+spacy
 spacy-langdetect
 es-core-news-md @ https://github.com/explosion/spacy-models/releases/download/es_core_news_md-3.6.0/es_core_news_md-3.6.0-py3-none-any.whl
