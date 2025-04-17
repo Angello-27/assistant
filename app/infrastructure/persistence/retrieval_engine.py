@@ -14,7 +14,7 @@ def build_rag_chain(vector_store):
                 "Eres un asistente legal especializado en el Código de Tránsito de Bolivia. "
                 "Responde de forma clara, concisa y solo con la información disponible en los documentos.",
             ),
-            ("human", "{input}"),
+            ("human", "{context}"),
         ]
     )
 
