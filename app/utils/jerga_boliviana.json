@@ -1,0 +1,350 @@
+{
+    "multa": [
+        "sanción",
+        "castigo",
+        "infracción",
+        "pena",
+        "multazo",
+        "recargo"
+    ],
+    "accidente": [
+        "choque",
+        "colisión",
+        "embestida",
+        "accidente de tránsito",
+        "raspón",
+        "bajón",
+        "percance"
+    ],
+    "infracción": [
+        "violación",
+        "falta",
+        "irregularidad",
+        "mala maniobra",
+        "transgresión"
+    ],
+    "conductor": [
+        "chofer",
+        "manejador",
+        "motorista",
+        "piloto",
+        "guía",
+        "micrero"
+    ],
+    "peatón": [
+        "persona caminando",
+        "transeúnte",
+        "caminante",
+        "pié",
+        "paseante"
+    ],
+    "violación": [
+        "incumplimiento",
+        "desobediencia",
+        "transgresión",
+        "desacato",
+        "falta grave"
+    ],
+    "límite de velocidad": [
+        "velocidad máxima",
+        "limite de rapidez",
+        "pase rápido"
+    ],
+    "semaforo": [
+        "luz de tráfico",
+        "sema",
+        "luz roja/verde",
+        "semaforo",
+        "roja",
+        "verde"
+    ],
+    "cruce": [
+        "intersección",
+        "bifurcación",
+        "cruce de calles",
+        "punto de cruce",
+        "punto rojo"
+    ],
+    "parar": [
+        "detenerse",
+        "frenar",
+        "hacer alto",
+        "parada obligatoria",
+        "dar freno"
+    ],
+    "centro de la ciudad": [
+        "el centro",
+        "centro",
+        "zona céntrica",
+        "área del centro de la ciudad",
+        "núcleo urbano"
+    ],
+    "estacionar": [
+        "aparcar",
+        "parquear",
+        "dejar el coche",
+        "parquearse",
+        "parqueo"
+    ],
+    "carnet de conducir": [
+        "brevete",
+        "brevet",
+        "licencia",
+        "carnet",
+        "carnet de manejo"
+    ],
+    "policía de tránsito": [
+        "paco",
+        "gendarme",
+        "agente",
+        "oficial",
+        "controlador"
+    ],
+    "zona prohibida": [
+        "área restringida",
+        "lugar no permitido",
+        "zona roja",
+        "punto no habilitado"
+    ],
+    "manejar borracho": [
+        "conducir ebrio",
+        "manejar tomando",
+        "al volante con alcohol"
+    ],
+    "accidente fatal": [
+        "choque mortal",
+        "accidente de vida o muerte",
+        "fallecimiento en el camino"
+    ],
+    "moto": [
+        "motoneta",
+        "motocicleta",
+        "motero",
+        "bici-moto",
+        "motoquero"
+    ],
+    "camión": [
+        "furgón",
+        "camionazo",
+        "motonave",
+        "pesado",
+        "camioneta"
+    ],
+    "infractor": [
+        "delincuente vial",
+        "quien viola la ley",
+        "violador de normas",
+        "quien hace mal",
+        "el que infringe"
+    ],
+    "multado": [
+        "sancionado",
+        "castigado",
+        "penalizado",
+        "cobrado",
+        "agarrado con multa"
+    ],
+    "viaducto": [
+        "puente",
+        "pasarela",
+        "paso elevado",
+        "autopista",
+        "carrera de altura"
+    ],
+    "donde se pasa rápido": [
+        "carretera",
+        "autopista",
+        "via rápida",
+        "vía express"
+    ],
+    "pista": [
+        "calle",
+        "carretera",
+        "vía",
+        "paso",
+        "acera"
+    ],
+    "desacato a la señal": [
+        "ignorar la señal",
+        "no respetar las señales",
+        "cruzar sin mirar",
+        "saltarse la señal"
+    ],
+    "alcantarilla": [
+        "sumidero",
+        "boca de lobo",
+        "agujero",
+        "agujero de agua"
+    ],
+    "grúa": [
+        "camión de arrastre",
+        "grúa de remolque",
+        "remolcadora",
+        "grúa con gancho"
+    ],
+    "frenazo": [
+        "freno de emergencia",
+        "detención rápida",
+        "frenar bruscamente",
+        "bajada de velocidad extrema"
+    ],
+    "tráfico": [
+        "embotellamiento",
+        "congestión",
+        "atasco",
+        "parada en la calle",
+        "cuello de botella"
+    ],
+    "arrestar": [
+        "detener",
+        "agarrar",
+        "poner a disposición",
+        "retener",
+        "detención",
+        "intervención"
+    ],
+    "papeleo": [
+        "trámite",
+        "documentación",
+        "papel",
+        "gestionando multas"
+    ],
+    "revisión técnica": [
+        "revisión vehicular",
+        "revisión de autos",
+        "chequeo del vehículo",
+        "inspección técnica"
+    ],
+    "sobrecupo": [
+        "irregularidad de espacio",
+        "ocupación ilegal",
+        "llevar más de lo permitido"
+    ],
+    "robo de vehículo": [
+        "hurto de auto",
+        "robo de carro",
+        "toma de vehículo",
+        "secuestro de movilidad"
+    ],
+    "falta grave": [
+        "transgresión mayor",
+        "multa pesada",
+        "violación severa",
+        "incumplimiento serio"
+    ],
+    "cinturón de seguridad": [
+        "cinturón",
+        "seguro de viaje",
+        "correa de seguridad"
+    ],
+    "espacio peatonal": [
+        "acera",
+        "paseo",
+        "camino peatonal",
+        "zona para caminar"
+    ],
+    "accidente menor": [
+        "choque pequeño",
+        "accidente sin daño grave",
+        "pintura rayada",
+        "accidente leve"
+    ],
+    "inspección vehicular": [
+        "control vehicular",
+        "verificación de vehículo",
+        "chequeo de autos",
+        "control de tránsito"
+    ],
+    "sobresalto": [
+        "descontrol al volante",
+        "emergencia",
+        "reacción brusca",
+        "reacción de pánico"
+    ],
+    "ruido de motor": [
+        "motor ruidoso",
+        "escape fuerte",
+        "ruidoso al andar",
+        "salida de escape"
+    ],
+    "mal estacionado": [
+        "parqueo indebido",
+        "mal parqueado",
+        "sin espacio permitido"
+    ],
+    "roto": [
+        "dañado",
+        "quebrado",
+        "chocado",
+        "estropeado",
+        "en mal estado"
+    ],
+    "bus": [
+        "micro",
+        "transporte público",
+        "minibús",
+        "colectivo"
+    ],
+    "riña": [
+        "pelea",
+        "disputa",
+        "enfrentamiento",
+        "pleito"
+    ],
+    "obstrucción": [
+        "bloqueo",
+        "impedimento",
+        "tranca",
+        "cerramiento"
+    ],
+    "arma blanca": [
+        "cuchillo",
+        "machete",
+        "navaja",
+        "cuchilla"
+    ],
+    "pistola": [
+        "revólver",
+        "arma de fuego",
+        "pistola de mano",
+        "arma corta"
+    ],
+    "secuestro": [
+        "rapto",
+        "captura ilegal",
+        "privación de libertad",
+        "detención no autorizada"
+    ],
+    "patrulla": [
+        "vehículo policial",
+        "camioneta",
+        "patrullero",
+        "móvil policial"
+    ],
+    "boleta": [
+        "informe",
+        "documento",
+        "multaje",
+        "constancia"
+    ],
+    "micrero": [
+        "chofer de micro",
+        "conductor de transporte público",
+        "driver de minibús"
+    ],
+    "vidrios polarizados": [
+        "ventanas oscuras",
+        "vidrios tintados",
+        "vidrios negros",
+        "vidrios oscuros"
+    ],
+    "U.T.O.P": [
+        "Unidad Táctica de Operaciones Policiales"
+    ],
+    "F.E.L.C.N.": [
+        "Fuerza Especial de Lucha Contra el Narcotráfico"
+    ],
+    "DIPROVE": [
+        "Dirección de Prevención de Robo de Vehículos"
+    ]
+}

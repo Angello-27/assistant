@@ -15,7 +15,7 @@ class DocumentRetriever:
     Permite seleccionar la estrategia de fragmentación.
     """
 
-    def __init__(self, documents_directory: str, split_mode: str = "titles"):
+    def __init__(self, documents_directory: str, split_mode: str = "articles"):
         print("📦 [Retriever] Inicializando DocumentRetriever...")
         self.split_mode = split_mode
         self.documents_directory = documents_directory

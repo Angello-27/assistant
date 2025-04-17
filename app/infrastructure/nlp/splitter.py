@@ -30,11 +30,16 @@ def split_document_spacy(
     for base in base_chunks:
         # Segunda capa: dentro de cada bloque, dividir por Artículos o Capítulos
         for article in split_strategy(base):
+            if not article:
+                print("⚠️ Artículo vacío o None detectado. Saltando.")
+                continue
+
             # Podrías alternar split_by_chapters, split_by_titles, etc.
             clean_text = normalize_chunk(
                 article if isinstance(article, str) else article[0]
             )
             if not clean_text:
+                print("⚠️ Artículo normalizado está vacío. Saltando.")
                 continue
 
             fragment_id = generate_id(doc_name, index)

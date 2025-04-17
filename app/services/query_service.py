@@ -4,7 +4,8 @@ from langchain.chains import create_retrieval_chain
 from langchain.prompts import ChatPromptTemplate
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from app.core.config import settings
-from app.schemas.response import QueryResponse  # ⬅ importalo al inicio
+from app.schemas.response import QueryResponse
+from app.infrastructure.utils.query_expander import expand_query
 
 # Configurar la API key de OpenAI
 openai.api_key = settings.OPENAI_API_KEY
@@ -28,11 +29,12 @@ class QueryService:
         print(
             f"📨 [QueryService] Recibida consulta: '{query}' | use_retrieval={use_retrieval}"
         )
+        expanded_query = expand_query(query)
         if use_retrieval and self.document_retriever:
             print("🔁 [QueryService] Usando pipeline RAG...")
-            return self.document_retriever.retrieve(query)
+            return self.document_retriever.retrieve(expanded_query)
         # Invoca la nueva cadena LCEL pasando un diccionario con el valor de "query"
-        answer = self.chain.invoke({"query": query})
+        answer = self.chain.invoke({"query": expanded_query})
         return QueryResponse(answer=answer, sources=[])
 
 
