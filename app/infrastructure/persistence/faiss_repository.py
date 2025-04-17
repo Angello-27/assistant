@@ -40,4 +40,8 @@ class FAISSRepository:
             raise FileNotFoundError(
                 "FAISS index no encontrado. Debes generarlo primero."
             )
-        return FAISS.load_local(self.persist_path, self.embeddings)
+        return FAISS.load_local(
+            self.persist_path,
+            self.embeddings,
+            allow_dangerous_deserialization=True,
+        )
