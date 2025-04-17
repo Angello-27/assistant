@@ -2,7 +2,7 @@ from langchain.prompts import ChatPromptTemplate
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain.chains import create_retrieval_chain
 from langchain_openai import ChatOpenAI
-from app.schemas.response import QueryResponse
+from app.schemas.response import QueryResponse, Document as APIDocument
 
 
 def build_rag_chain(vector_store):
@@ -53,8 +53,14 @@ def process_query_with_retrieval(query: str, vector_store) -> QueryResponse:
 
     # Extraer contenido de los fragmentos/artículos como fuentes
     retrieved_docs = vector_store.as_retriever().invoke(query)
-    sources = [
-        f"{doc.metadata.get('source', 'desconocido')} → {doc.page_content.strip()[:300]}"
+    # Transformar LangChain.Document a tu esquema Document esperado por el frontend
+    documents_context = [
+        APIDocument(
+            id=doc.metadata.get("id", "sin_id"),
+            metadata=doc.metadata,
+            page_content=doc.page_content,
+            type="document",
+        )
         for doc in retrieved_docs
     ]
 
@@ -70,5 +76,5 @@ def process_query_with_retrieval(query: str, vector_store) -> QueryResponse:
     # Devuelve la respuesta estructurada
     return QueryResponse(
         answer=result.get("answer", "") if isinstance(result, dict) else str(result),
-        sources=sources,
+        context=documents_context,
     )

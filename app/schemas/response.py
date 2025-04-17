@@ -1,8 +1,14 @@
-# app/schemas/response.py
+from typing import List, Any, Dict
 from pydantic import BaseModel
-from typing import List
+
+
+class Document(BaseModel):
+    id: str
+    metadata: Dict[str, Any]
+    page_content: str
+    type: str = "document"
 
 
 class QueryResponse(BaseModel):
     answer: str
-    sources: List[str] = []
+    context: List[Document]
