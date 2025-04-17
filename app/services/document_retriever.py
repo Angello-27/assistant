@@ -2,6 +2,8 @@ from langchain_community.document_loaders import DirectoryLoader, TextLoader
 from langchain_openai import OpenAIEmbeddings
 from langchain_community.vectorstores import FAISS
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+from app.infrastructure.nlp.splitter import split_document_spacy
+from app.infrastructure.persistence.vector_store import store_in_vector_db
 
 
 def load_documents(directory_path: str):
@@ -72,8 +74,18 @@ def process_query_with_retrieval(query: str, vector_store) -> str:
 class DocumentRetriever:
     def __init__(self, documents_directory: str):
         # Carga y divide documentos en fragmentos desde el directorio indicado
-        self.documents = load_and_split_documents(documents_directory)
-        self.vector_store = build_vector_store(self.documents)
+        ## self.documents = load_and_split_documents(documents_directory)
+        ## self.vector_store = build_vector_store(self.documents)
+        loaded_docs = load_documents(documents_directory)
+
+        all_fragments = []
+        for doc in loaded_docs:
+            content = doc.page_content
+            file_name = doc.metadata.get("source", "documento")
+            fragments = split_document_spacy(content, file_name)
+            all_fragments.extend(fragments)
+
+        self.vector_store = store_in_vector_db(all_fragments)
 
     def retrieve(self, query: str) -> str:
         return process_query_with_retrieval(query, self.vector_store)

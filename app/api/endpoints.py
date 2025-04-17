@@ -1,18 +1,20 @@
-from fastapi import APIRouter, HTTPException
-from app.models.query import QueryRequest
-from app.services.query_service import QueryService
-from app.services.document_retriever import DocumentRetriever
+from fastapi import APIRouter, Depends, HTTPException
+from app.services.query_service import get_query_service
+from app.schemas.query import QueryRequest
 
 router = APIRouter()
 
-# Instanciar DocumentRetriever con la ruta de tu carpeta de documentos
-document_retriever = DocumentRetriever(documents_directory="documents")
-# Instanciar QueryService inyectando el document_retriever
-query_service = QueryService(document_retriever=document_retriever)
-
 
 @router.post("/ask")
-async def ask_question(request: QueryRequest, use_retrieval: bool = True):
+async def ask_question(
+    request: QueryRequest,
+    use_retrieval: bool = True,
+    query_service=Depends(get_query_service),
+):
+    """
+    Endpoint principal que procesa una consulta legal.
+    Utiliza el servicio QueryService para generar una respuesta basada en documentos relevantes.
+    """
     try:
         answer = query_service.query(request.query, use_retrieval=use_retrieval)
         return {"answer": answer}

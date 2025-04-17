@@ -1,13 +1,15 @@
-import os
-from dotenv import load_dotenv
+from pydantic import BaseSettings
 
-# Cargar variables de entorno desde .env
-load_dotenv()
 
-class Settings:
-    OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY")
+class Settings(BaseSettings):
+    """
+    Configuración principal del sistema cargada desde variables de entorno.
+    """
+
+    OPENAI_API_KEY: str
+
+    class Config:
+        env_file = ".env"
+
 
 settings = Settings()
-
-if not settings.OPENAI_API_KEY:
-    raise Exception("La API Key de OpenAI no está configurada en el archivo .env")
