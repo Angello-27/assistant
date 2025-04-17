@@ -18,7 +18,12 @@ class DocumentRetriever:
     def __init__(self, documents_directory: str, split_mode: str = "articles"):
         self.split_mode = split_mode
         self.documents_directory = documents_directory
-        self.vector_store = self._prepare_vectorstore()
+        self.repo = FAISSRepository()  # repo ahora está disponible siempre
+
+        try:
+            self.vector_store = self.repo.load_vectorstore()
+        except FileNotFoundError:
+            self.vector_store = self._prepare_vectorstore()
 
     def _get_split_strategy(self):
         if self.split_mode == "chapters":

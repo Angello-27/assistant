@@ -1,8 +1,10 @@
 import openai
-from langchain_openai import OpenAI
-from langchain.prompts import PromptTemplate
-from langchain_core.output_parsers import StrOutputParser
+from langchain_openai import ChatOpenAI
+from langchain.chains import create_retrieval_chain
+from langchain.prompts import ChatPromptTemplate
+from langchain.chains.combine_documents import create_stuff_documents_chain
 from app.core.config import settings
+from app.schemas.response import QueryResponse  # ⬅ importalo al inicio
 
 # Configurar la API key de OpenAI
 openai.api_key = settings.OPENAI_API_KEY
@@ -16,25 +18,7 @@ class QueryService:
         """
         self.document_retriever = document_retriever
 
-        # Usamos PromptTemplate de langchain.prompts (si es necesario, podrías migrar a ChatPromptTemplate si usas un modelo de chat)
-        self.prompt = PromptTemplate(
-            template="""
-        Eres un asistente legal especializado en el Código de Tránsito de Bolivia.
-        Responde de forma clara y concisa a la siguiente consulta:
-        Pregunta: {query}
-        Respuesta:
-        """,
-            input_variables=["query"],
-        )
-        # Inicializar el modelo de lenguaje (ChatOpenAI u OpenAI, según prefieras)
-        self.llm = OpenAI(temperature=0.7)
-
-        # Crear la nueva cadena usando LCEL: componemos el prompt, el modelo y un parser que extraiga el texto
-        # Esto reemplaza el uso de LLMChain legacy.
-        # Definir un prompt orientado a la normativa de tránsito de Bolivia
-        self.chain = self.prompt | self.llm | StrOutputParser()
-
-    def query(self, query: str, use_retrieval: bool = True) -> dict:
+    def query(self, query: str, use_retrieval: bool = True) -> QueryResponse:
         """
         Procesa una consulta:
           - Si use_retrieval es True y se ha proporcionado un document_retriever,
@@ -45,11 +29,11 @@ class QueryService:
             return self.document_retriever.retrieve(query)
         # Invoca la nueva cadena LCEL pasando un diccionario con el valor de "query"
         answer = self.chain.invoke({"query": query})
-        return {
-            "answer": answer,
-            "sources": [],
-            "confidence": 0.85,
-        }
+        return QueryResponse(
+            answer=answer,
+            sources=[],
+            confidence=0.85,
+        )
 
 
 def get_query_service():

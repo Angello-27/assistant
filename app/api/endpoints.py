@@ -18,6 +18,6 @@ async def ask_question(
     """
     try:
         answer = query_service.query(request.query, use_retrieval=use_retrieval)
-        return {"answer": answer}
+        return answer  #  Ya es un QueryResponse
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
