@@ -30,6 +30,7 @@ class QueryService:
             f"📨 [QueryService] Recibida consulta: '{query}' | use_retrieval={use_retrieval}"
         )
         expanded_query = expand_query(query)
+        print(f"📨 [QueryService] Recibida consulta enriquecida: '{expanded_query}'")
         if use_retrieval and self.document_retriever:
             print("🔁 [QueryService] Usando pipeline RAG...")
             return self.document_retriever.retrieve(expanded_query)
