@@ -22,8 +22,7 @@ def expand_query(query: str) -> str:
     Expande una consulta agregando sinónimos bolivianos para mejorar la recuperación semántica
     y reformulando con expresiones regulares para adaptar el lenguaje.
     """
-    query_lower = query.lower()
-    expanded_query = query  # Se parte de la consulta original
+    expanded_query = query.lower()  # Se parte de la consulta original
 
     # Crear diccionario de reemplazo: sinónimo -> palabra técnica
     replacement = {
