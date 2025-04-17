@@ -13,8 +13,8 @@ def build_rag_chain(vector_store):
                 "system",
                 "Eres un asistente legal experto en el Código de Tránsito Boliviano. "
                 "Utiliza únicamente la información proporcionada a continuación para responder. "
-                "Si no encuentras información suficiente, responde exactamente: "
-                "'No se encontró información suficiente en los documentos proporcionados.'",
+                "Si no encuentras el monto exacto de la multa, pero puedes inferir si algo está prohibido o sancionado, explícalo claramente. "
+                "Si no hay información útil, responde: 'No se encontró información suficiente...'",
             ),
             (
                 "human",
@@ -38,7 +38,8 @@ def build_rag_chain(vector_store):
 
 def process_query_with_retrieval(query: str, vector_store) -> QueryResponse:
     """
-    Ejecuta el pipeline RAG completo: recuperación + generación.
+    Usa el pipeline RAG (retrieval + generación) con vector store ya cargado.
+    Devuelve una respuesta estructurada con texto y artículos fuente usados.
     """
     print("🔍 [RAG] Procesando consulta:", query)
 
@@ -50,9 +51,12 @@ def process_query_with_retrieval(query: str, vector_store) -> QueryResponse:
         {"input": query}
     )  # ¡IMPORTANTE! 'input' es la entrada esperada
 
-    # Extrae documentos usados
+    # Extraer contenido de los fragmentos/artículos como fuentes
     retrieved_docs = vector_store.as_retriever().invoke(query)
-    sources = [doc.metadata.get("source", "desconocido") for doc in retrieved_docs]
+    sources = [
+        f"{doc.metadata.get('source', 'desconocido')} → {doc.page_content.strip()[:300]}"
+        for doc in retrieved_docs
+    ]
 
     # Debug: imprime el contexto enviado al LLM
     context = "\n\n".join(
@@ -66,6 +70,5 @@ def process_query_with_retrieval(query: str, vector_store) -> QueryResponse:
     # Devuelve la respuesta estructurada
     return QueryResponse(
         answer=result.get("answer", "") if isinstance(result, dict) else str(result),
-        sources=list(set(sources)),
-        confidence=0.85,
+        sources=sources,
     )

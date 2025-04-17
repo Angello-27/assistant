@@ -1,7 +1,8 @@
+# app/schemas/response.py
 from pydantic import BaseModel
+from typing import List
 
 
 class QueryResponse(BaseModel):
     answer: str
-    sources: list[str] = []
-    confidence: float = 0.85
+    sources: List[str] = []

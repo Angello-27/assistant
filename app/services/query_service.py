@@ -33,11 +33,7 @@ class QueryService:
             return self.document_retriever.retrieve(query)
         # Invoca la nueva cadena LCEL pasando un diccionario con el valor de "query"
         answer = self.chain.invoke({"query": query})
-        return QueryResponse(
-            answer=answer,
-            sources=[],
-            confidence=0.85,
-        )
+        return QueryResponse(answer=answer, sources=[])
 
 
 def get_query_service():
