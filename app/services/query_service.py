@@ -25,7 +25,11 @@ class QueryService:
             se utiliza la búsqueda en documentos locales.
           - De lo contrario, se procesa la consulta de forma directa usando la nueva cadena LCEL.
         """
+        print(
+            f"📨 [QueryService] Recibida consulta: '{query}' | use_retrieval={use_retrieval}"
+        )
         if use_retrieval and self.document_retriever:
+            print("🔁 [QueryService] Usando pipeline RAG...")
             return self.document_retriever.retrieve(query)
         # Invoca la nueva cadena LCEL pasando un diccionario con el valor de "query"
         answer = self.chain.invoke({"query": query})

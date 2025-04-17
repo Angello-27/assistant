@@ -32,7 +32,9 @@ class FAISSRepository:
         ]
 
         vectorstore = FAISS.from_documents(docs, self.embeddings)
+        print("💾 [FAISS] Guardando índice FAISS en disco...")
         vectorstore.save_local(self.persist_path)
+        print("✅ [FAISS] Vector store guardado en:", self.persist_path)
         return vectorstore
 
     def load_vectorstore(self) -> FAISS:
@@ -40,6 +42,7 @@ class FAISSRepository:
             raise FileNotFoundError(
                 "FAISS index no encontrado. Debes generarlo primero."
             )
+        print("📁 [FAISS] Intentando cargar vector store desde disco...")
         return FAISS.load_local(
             self.persist_path,
             self.embeddings,

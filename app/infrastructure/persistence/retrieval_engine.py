@@ -6,44 +6,66 @@ from app.schemas.response import QueryResponse
 
 
 def build_rag_chain(vector_store):
-    # Prompt personalizado (en vez del hub)
+    # Prompt con variable 'context' porque es lo que recibe el LLM luego del formato
     prompt = ChatPromptTemplate.from_messages(
         [
             (
                 "system",
-                "Eres un asistente legal especializado en el Código de Tránsito de Bolivia. "
-                "Responde de forma clara, concisa y solo con la información disponible en los documentos.",
+                "Eres un asistente legal experto en el Código de Tránsito Boliviano. "
+                "Utiliza únicamente la información proporcionada a continuación para responder. "
+                "Si no encuentras información suficiente, responde exactamente: "
+                "'No se encontró información suficiente en los documentos proporcionados.'",
             ),
-            ("human", "{context}"),
+            (
+                "human",
+                "{context}",
+            ),  # Esta variable es llenada por LangChain con los documentos recuperados
         ]
     )
 
-    # Inicializa un modelo de chat (ChatOpenAI suele ser la opción recomendada para prompts conversacionales)
+    # LLM configurado
     llm = ChatOpenAI(temperature=0.7)
 
-    # Crea la cadena de recuperación, pasando el retriever del vector store y la cadena de combinación de documentos
-    retriever = vector_store.as_retriever()
+    # Crea la cadena que combina documentos y los convierte en texto
     combine_chain = create_stuff_documents_chain(llm, prompt)
 
+    # Crea el retriever con el vector store
+    retriever = vector_store.as_retriever()
+
+    # Une el retriever con la cadena de combinación (RAG)
     return create_retrieval_chain(retriever, combine_chain)
 
 
 def process_query_with_retrieval(query: str, vector_store) -> QueryResponse:
     """
-    Usa el pipeline RAG (retrieval + generación) con vector store ya cargado.
-    Devuelve una respuesta estructurada con texto, fuentes y confianza.
+    Ejecuta el pipeline RAG completo: recuperación + generación.
     """
+    print("🔍 [RAG] Procesando consulta:", query)
+
+    # Construye el pipeline RAG
     rag_chain = build_rag_chain(vector_store)
 
-    # Invoca la cadena con el input; el resultado puede ser un dict que incluya la respuesta en la clave "text"
-    result = rag_chain.invoke({"input": query})
+    # Ejecuta el pipeline pasando la consulta como 'input'
+    result = rag_chain.invoke(
+        {"input": query}
+    )  # ¡IMPORTANTE! 'input' es la entrada esperada
 
-    # Documentos usados en la recuperación
+    # Extrae documentos usados
     retrieved_docs = vector_store.as_retriever().invoke(query)
     sources = [doc.metadata.get("source", "desconocido") for doc in retrieved_docs]
 
+    # Debug: imprime el contexto enviado al LLM
+    context = "\n\n".join(
+        [
+            f"Fuente: {doc.metadata.get('source', 'desconocido')}\n{doc.page_content}"
+            for doc in retrieved_docs
+        ]
+    )
+    print("🧾 Contexto completo enviado al LLM:\n", context)
+
+    # Devuelve la respuesta estructurada
     return QueryResponse(
-        answer=result.get("text", "") if isinstance(result, dict) else str(result),
-        sources=list(set(sources)),  # quitar duplicados
+        answer=result.get("answer", "") if isinstance(result, dict) else str(result),
+        sources=list(set(sources)),
         confidence=0.85,
     )
