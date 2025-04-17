@@ -1,20 +1,27 @@
-from typing import List, Callable
+import re
+import uuid
+from typing import List
 from app.domain.entities.fragment import Fragment
 from app.infrastructure.nlp.utils import extract_keywords
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from app.infrastructure.utils.generator import generate_id, split_by_articles
+
+
+def generate_id(doc_name: str, index: int) -> str:
+    return f"{doc_name.replace('.txt', '')}-{index}-{uuid.uuid4().hex[:8]}"
 
 
 def normalize_chunk(chunk: str) -> str:
     return chunk.strip().replace("\n", " ").replace("  ", " ").strip()
 
 
+# -- Extractores puros --
+def extract_articles(text: str) -> List[str]:
+    pattern = re.compile(r"(Artículo\s+\d+.*?)(?=(\nArtículo\s+\d+|\Z))", re.DOTALL)
+    return [m.group(1) for m in pattern.finditer(text)]
+
+
 # Proceso combinado: LangChain → spaCy → enriquecimiento
-def split_document_spacy(
-    text: str,
-    doc_name: str,
-    split_strategy: Callable[[str], List[str]] = split_by_articles,
-) -> List[Fragment]:
+def split_document_spacy(text: str, doc_name: str) -> List[Fragment]:
     """
     Aplica una división jerárquica con LangChain + NLP.
     split_strategy: función que define cómo se divide internamente (por artículos, capítulos, etc.)
@@ -24,20 +31,21 @@ def split_document_spacy(
     splitter = RecursiveCharacterTextSplitter(chunk_size=5000, chunk_overlap=300)
     base_chunks = splitter.split_text(text)
 
-    fragments: List[Fragment] = []
     index = 0
+    fragments: List[Fragment] = []
 
     for base in base_chunks:
-        # Segunda capa: dentro de cada bloque, dividir por Artículos o Capítulos
-        for article in split_strategy(base):
-            if not article:
+        # dentro de cada bloque, dividir por Artículos o Capítulos
+        for raw_article in extract_articles(base):
+            if not raw_article:
                 print("⚠️ Artículo vacío o None detectado. Saltando.")
                 continue
 
             # Podrías alternar split_by_chapters, split_by_titles, etc.
             clean_text = normalize_chunk(
-                article if isinstance(article, str) else article[0]
+                raw_article if isinstance(raw_article, str) else raw_article[0]
             )
+            print("📄 Artículo extraído:", clean_text[:120])
             if not clean_text:
                 print("⚠️ Artículo normalizado está vacío. Saltando.")
                 continue

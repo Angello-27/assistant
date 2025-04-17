@@ -23,7 +23,7 @@ def expand_query(query: str) -> str:
     y reformulando con expresiones regulares para adaptar el lenguaje.
     """
     query_lower = query.lower()
-    expanded_parts = [query]
+    expanded_query = query  # Inicialización segura
 
     for word, synonyms in JERGA_BOLIVIANA.items():
         # Crear un patrón que capture todas las variaciones de la palabra clave (sinónimos)
@@ -48,7 +48,10 @@ def expand_query(query: str) -> str:
             # Reemplazamos la frase utilizando las reglas definidas en el diccionario de sinónimos
             for old_word, new_word in replacement.items():
                 expanded_query = re.sub(
-                    r"\b" + re.escape(old_word) + r"\b", new_word, expanded_query
+                    r"\b" + re.escape(old_word) + r"\b",
+                    new_word,
+                    expanded_query,
+                    flags=re.IGNORECASE,
                 )
 
     # Ahora, con los sinónimos reemplazados, se puede agregar más contexto o estructura si es necesario
