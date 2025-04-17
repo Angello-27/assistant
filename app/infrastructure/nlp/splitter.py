@@ -1,45 +1,26 @@
-import re
-import uuid
-from typing import List
+from typing import List, Callable
 from app.domain.entities.fragment import Fragment
-from app.infrastructure.nlp.nlp_utils import extract_keywords
+from app.infrastructure.nlp.utils import extract_keywords
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-
-
-def generate_id(doc_name: str, index: int) -> str:
-    return f"{doc_name.replace('.txt', '')}-{index}-{uuid.uuid4().hex[:8]}"
-
-
-# ⬇ Nuevos métodos de segmentación legal (por bloques jerárquicos)
-def split_by_titles(text: str) -> List[str]:
-    return re.split(
-        r"(Título\s+[IVXLCDM]+\b.*?)(?=\n(Título\s+[IVXLCDM]+\b)|\Z)",
-        text,
-        flags=re.DOTALL,
-    )
-
-
-def split_by_chapters(text: str) -> List[str]:
-    return re.split(
-        r"(Capítulo\s+[IVXLCDM]+\b.*?)(?=\n(Capítulo\s+[IVXLCDM]+\b)|\Z)",
-        text,
-        flags=re.DOTALL,
-    )
-
-
-def split_by_articles(text: str) -> List[str]:
-    return re.findall(
-        r"(Artículo\s+\d+\.?.*?)(?=(\nArtículo\s+\d+\.?)|\Z)", text, flags=re.DOTALL
-    )
+from app.infrastructure.utils.generator import generate_id, split_by_articles
 
 
 def normalize_chunk(chunk: str) -> str:
     return chunk.strip().replace("\n", " ").replace("  ", " ").strip()
 
 
-# 🔁 Proceso combinado: LangChain → spaCy → enriquecimiento
-def split_document_spacy(text: str, doc_name: str) -> List[Fragment]:
-    # 1. Primera capa: dividir con LangChain si el texto es muy largo
+# Proceso combinado: LangChain → spaCy → enriquecimiento
+def split_document_spacy(
+    text: str,
+    doc_name: str,
+    split_strategy: Callable[[str], List[str]] = split_by_articles,
+) -> List[Fragment]:
+    """
+    Aplica una división jerárquica con LangChain + NLP.
+    split_strategy: función que define cómo se divide internamente (por artículos, capítulos, etc.)
+    """
+    # Configura el text splitter: chunk_size es el tamaño máximo del fragmento,
+    # chunk_overlap es la cantidad de caracteres que se solapan entre fragmentos.
     splitter = RecursiveCharacterTextSplitter(chunk_size=5000, chunk_overlap=300)
     base_chunks = splitter.split_text(text)
 
@@ -47,10 +28,9 @@ def split_document_spacy(text: str, doc_name: str) -> List[Fragment]:
     index = 0
 
     for base in base_chunks:
-        # 2. Segunda capa: dentro de cada bloque, dividir por Artículos o Capítulos
-        for article in split_by_articles(
-            base
-        ):  # Podrías alternar split_by_chapters, split_by_titles, etc.
+        # Segunda capa: dentro de cada bloque, dividir por Artículos o Capítulos
+        for article in split_strategy(base):
+            # Podrías alternar split_by_chapters, split_by_titles, etc.
             clean_text = normalize_chunk(
                 article if isinstance(article, str) else article[0]
             )

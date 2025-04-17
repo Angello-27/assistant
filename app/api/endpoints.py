@@ -1,11 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException
 from app.services.query_service import get_query_service
 from app.schemas.query import QueryRequest
+from app.schemas.response import QueryResponse
 
 router = APIRouter()
 
 
-@router.post("/ask")
+@router.post("/ask", response_model=QueryResponse)
 async def ask_question(
     request: QueryRequest,
     use_retrieval: bool = True,

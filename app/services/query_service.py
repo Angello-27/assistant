@@ -34,7 +34,7 @@ class QueryService:
         # Definir un prompt orientado a la normativa de tránsito de Bolivia
         self.chain = self.prompt | self.llm | StrOutputParser()
 
-    def query(self, query: str, use_retrieval: bool = True) -> str:
+    def query(self, query: str, use_retrieval: bool = True) -> dict:
         """
         Procesa una consulta:
           - Si use_retrieval es True y se ha proporcionado un document_retriever,
@@ -43,9 +43,13 @@ class QueryService:
         """
         if use_retrieval and self.document_retriever:
             return self.document_retriever.retrieve(query)
-        else:
-            # Invoca la nueva cadena LCEL pasando un diccionario con el valor de "query"
-            return self.chain.invoke({"query": query})
+        # Invoca la nueva cadena LCEL pasando un diccionario con el valor de "query"
+        answer = self.chain.invoke({"query": query})
+        return {
+            "answer": answer,
+            "sources": [],
+            "confidence": 0.85,
+        }
 
 
 def get_query_service():

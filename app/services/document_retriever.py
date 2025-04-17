@@ -1,91 +1,48 @@
-from langchain_community.document_loaders import DirectoryLoader, TextLoader
-from langchain_openai import OpenAIEmbeddings
-from langchain_community.vectorstores import FAISS
-from langchain_text_splitters import RecursiveCharacterTextSplitter
+from app.infrastructure.persistence.document_loader import load_documents_from_directory
+from app.infrastructure.persistence.faiss_repository import FAISSRepository
+from app.infrastructure.persistence.retrieval_engine import process_query_with_retrieval
 from app.infrastructure.nlp.splitter import split_document_spacy
-from app.infrastructure.persistence.vector_store import store_in_vector_db
-
-
-def load_documents(directory_path: str):
-    """
-    Carga todos los documentos de texto del directorio especificado.
-    Se asume que los documentos están en formato .txt.
-    """
-    loader = DirectoryLoader(
-        directory_path,
-        glob="*.txt",
-        loader_cls=TextLoader,
-        loader_kwargs={"encoding": "utf-8"},
-    )
-    return loader.load()
-
-
-def load_and_split_documents(directory_path: str):
-    """
-    Carga y divide en fragmentos los documentos de texto del directorio especificado.
-    """
-    docs = load_documents(directory_path)
-    # Configura el text splitter: chunk_size es el tamaño máximo del fragmento,
-    # chunk_overlap es la cantidad de caracteres que se solapan entre fragmentos.
-    splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=100)
-    split_docs = splitter.split_documents(docs)
-    return split_docs
-
-
-def build_vector_store(documents):
-    """
-    Construye un vector store (FAISS) a partir de los documentos utilizando OpenAIEmbeddings.
-    """
-    embeddings = OpenAIEmbeddings()
-    return FAISS.from_documents(documents, embeddings)
-
-
-def process_query_with_retrieval(query: str, vector_store) -> str:
-    """
-    Usa el nuevo enfoque LCEL para buscar documentos relevantes en el vector store y
-    generar una respuesta a partir de ellos.
-    """
-    from langchain import hub
-    from langchain.chains.combine_documents import create_stuff_documents_chain
-    from langchain.chains import create_retrieval_chain
-    from langchain_openai import ChatOpenAI
-
-    # Extrae un prompt de ejemplo desde hub (puedes personalizarlo o definir el tuyo propio)
-    retrieval_qa_chat_prompt = hub.pull("langchain-ai/retrieval-qa-chat")
-
-    # Inicializa un modelo de chat (ChatOpenAI suele ser la opción recomendada para prompts conversacionales)
-    llm = ChatOpenAI(temperature=0.7)
-
-    # Crea una cadena para combinar documentos usando el prompt obtenido
-    combine_docs_chain = create_stuff_documents_chain(llm, retrieval_qa_chat_prompt)
-
-    # Crea la cadena de recuperación, pasando el retriever del vector store y la cadena de combinación de documentos
-    rag_chain = create_retrieval_chain(vector_store.as_retriever(), combine_docs_chain)
-
-    # Invoca la cadena con el input; el resultado puede ser un dict que incluya la respuesta en la clave "text"
-    result = rag_chain.invoke({"input": query})
-
-    # Si el resultado es un diccionario y contiene la clave "text", se extrae esa respuesta
-    if isinstance(result, dict) and "text" in result:
-        return result["text"]
-    return result
+from app.infrastructure.utils.generator import (
+    split_by_articles,
+    split_by_chapters,
+    split_by_titles,
+)
 
 
 class DocumentRetriever:
-    def __init__(self, documents_directory: str):
+    """
+    Orquesta el flujo: cargar documentos → fragmentar → vectorizar → consultar.
+    Permite seleccionar la estrategia de fragmentación.
+    """
+
+    def __init__(self, documents_directory: str, split_mode: str = "articles"):
+        self.split_mode = split_mode
+        self.documents_directory = documents_directory
+        self.vector_store = self._prepare_vectorstore()
+
+    def _get_split_strategy(self):
+        if self.split_mode == "chapters":
+            return split_by_chapters
+        elif self.split_mode == "titles":
+            return split_by_titles
+        else:
+            return split_by_articles  # por defecto
+
+    def _prepare_vectorstore(self):
+        strategy = self._get_split_strategy()
         # Carga y divide documentos en fragmentos desde el directorio indicado
-        ## self.documents = load_and_split_documents(documents_directory)
-        ## self.vector_store = build_vector_store(self.documents)
-        loaded_docs = load_documents(documents_directory)
+        docs = load_documents_from_directory(self.documents_directory)
 
-        all_fragments = []
-        for doc in loaded_docs:
+        fragments = []
+        for doc in docs:
             content = doc.page_content
-            file_name = doc.metadata.get("source", "documento")
-            fragments = split_document_spacy(content, file_name)
-            all_fragments.extend(fragments)
+            filename = doc.metadata.get("source", "documento")
+            fragments.extend(
+                split_document_spacy(content, filename, split_strategy=strategy)
+            )
 
-        self.vector_store = store_in_vector_db(all_fragments)
+        repo = FAISSRepository()
+        return repo.build_vectorstore(fragments)
 
     def retrieve(self, query: str) -> str:
         return process_query_with_retrieval(query, self.vector_store)
