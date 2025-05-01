@@ -10,7 +10,7 @@ class IQueryExpander(ABC):
     @abstractmethod
     def expand(self, query: str) -> str:
         """
-        Recibe una consulta y devuelve una versión expandida
-        (sinónimos, jerga, limpieza).
+        Recibe la consulta original y devuelve una versión expandida
+        o normalizada para mejorar la recuperación de información.
         """
         pass
