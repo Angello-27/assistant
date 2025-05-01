@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.api.endpoints import router as api_router
+from app.entrypoints.http.fastapi_endpoints import router as api_router
 
 app = FastAPI(title="Asistente Legal de Tránsito")
 

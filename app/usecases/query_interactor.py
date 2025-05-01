@@ -3,7 +3,7 @@ from langchain_openai import ChatOpenAI
 from langchain.chains import create_retrieval_chain
 from langchain.prompts import ChatPromptTemplate
 from langchain.chains.combine_documents import create_stuff_documents_chain
-from app.core.config import settings
+from app.config.settings import settings
 from app.schemas.response import QueryResponse
 from app.infrastructure.utils.query_expander import expand_query
 

@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
-from app.services.query_service import get_query_service
+from app.usecases.query_interactor import get_query_service
 from app.schemas.query import QueryRequest
 from app.schemas.response import QueryResponse
 

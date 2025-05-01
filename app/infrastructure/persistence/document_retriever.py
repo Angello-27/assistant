@@ -1,6 +1,6 @@
-from app.infrastructure.persistence.document_loader import load_documents_from_directory
+from document_loader import load_documents_from_directory
 from app.infrastructure.persistence.faiss_repository import FAISSRepository
-from app.infrastructure.persistence.retrieval_engine import process_query_with_retrieval
+from app.infrastructure.langchain.retrieval_engine import process_query_with_retrieval
 from app.infrastructure.nlp.splitter import split_document_spacy
 
 
