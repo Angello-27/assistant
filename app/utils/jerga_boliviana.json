@@ -267,10 +267,21 @@
         "ruidoso al andar",
         "salida de escape"
     ],
+    "zona de discapacitados": [
+        "espacio reservado",
+        "lugar para discapacitados",
+        "área para personas con discapacidad",
+        "silla de ruedas",
+        "zona azul",
+        "espacio azul",
+        "parqueo de minusválidos",
+        "discapacidad"
+    ],
     "mal estacionado": [
+        "estacionado incorrectamente",
+        "fuera del área",
         "parqueo indebido",
-        "mal parqueado",
-        "sin espacio permitido"
+        "obstrucción de espacio"
     ],
     "roto": [
         "dañado",
@@ -348,5 +359,44 @@
     ],
     "DIPROVE": [
         "Dirección de Prevención de Robo de Vehículos"
+    ],
+    "rebasar": [
+        "adelantar",
+        "pasar",
+        "sobrepasar",
+        "ganar posición",
+        "pasar por el lado",
+        "dejar atrás",
+        "meter el coche adelante",
+        "pasarle",
+        "sacarle ventaja",
+        "cruzarse por delante",
+        "hacerle la pasada",
+        "mandarse"
+    ],
+    "adelantar": [
+        "rebasar",
+        "pasar",
+        "meterse por el lado",
+        "pasar por la izquierda",
+        "pasar por la derecha",
+        "sobrepasar",
+        "hacer la maniobra",
+        "salirse para pasar"
+    ],
+    "pasar por la izquierda": [
+        "adelantar por la izquierda",
+        "rebasar por la izquierda",
+        "hacer el sobrepaso",
+        "meterse por la izquierda",
+        "ganar el carril"
+    ],
+    "pasar por la derecha": [
+        "adelantar por la derecha",
+        "rebasar por la derecha",
+        "meterse por la derecha",
+        "pasar por el otro lado",
+        "hacer la pasada por la derecha",
+        "salir por el carril derecho"
     ]
 }
