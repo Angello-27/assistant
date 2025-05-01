@@ -1,15 +1,18 @@
+# app/config/settings.py
 from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
     """
-    Configuración principal del sistema cargada desde variables de entorno.
+    Configuración principal del sistema, cargada desde variables de entorno.
     """
 
-    OPENAI_API_KEY: str
+    OPENAI_API_KEY: str  # clave de API para OpenAI
 
     class Config:
+        # Archivo de entorno donde se definen variables:
         env_file = ".env"
 
 
-settings = Settings()
+# Instancia global de configuración
+tsettings = Settings()
