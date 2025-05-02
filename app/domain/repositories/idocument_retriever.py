@@ -1,18 +1,18 @@
 # app/domain/repositories/idocument_retriever.py
 from abc import ABC, abstractmethod
-from app.schemas.response import QueryResponse
+from langchain_community.vectorstores import FAISS
 
 
 class IDocumentRetriever(ABC):
     """
-    Contrato para recuperadores de documentos.
-    Define la operación de búsqueda/retrieval que devuelve un QueryResponse.
+    Contrato para proveedores de vector store de documentos.
+    Sólo expone get_vector_store(), que devuelve la instancia FAISS ya cargada
+    o construida.
     """
 
     @abstractmethod
-    def retrieve(self, query: str) -> QueryResponse:
+    def get_vector_store(self) -> FAISS:
         """
-        Ejecuta la búsqueda de la consulta expandida y devuelve
-        un objeto QueryResponse con la respuesta y el contexto.
+        Devuelve el FAISS vector store, construyéndolo o cargándolo de persistencia.
         """
         ...

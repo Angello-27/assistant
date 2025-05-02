@@ -1,5 +1,7 @@
 # app/infrastructure/persistence/document_retriever.py
 from typing import List
+from typing import Optional
+from langchain_community.vectorstores import FAISS
 from app.domain.repositories.idocument_retriever import IDocumentRetriever
 from app.domain.repositories.idocument_loader import IDocumentLoader
 from app.domain.repositories.ivector_repository import IVectorRepository
@@ -18,8 +20,8 @@ class DocumentRetriever(IDocumentRetriever):
     def __init__(
         self,
         documents_directory: str,
-        loader: IDocumentLoader | None = None,
-        vector_repo: IVectorRepository | None = None,
+        loader: Optional[IDocumentLoader] = None,
+        vector_repo: Optional[IVectorRepository] = None,
     ):
         self.documents_directory = documents_directory
         # si no se inyecta, usamos la implementación por defecto
@@ -48,8 +50,8 @@ class DocumentRetriever(IDocumentRetriever):
             fragments.extend(split_document_spacy(content, source))
         return self.repo.build(fragments)
 
-    def get_vector_store(self):
+    def get_vector_store(self) -> FAISS:
         """
-        Devuelve el FAISS vector store, para pasarlo al RagEngine.
+        Devuelve la instancia FAISS (cargada o recién construida).
         """
-        return self.vector_store
+        return self._vs

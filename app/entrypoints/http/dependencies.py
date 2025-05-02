@@ -56,14 +56,13 @@ def get_query_expander() -> IQueryExpander:
 
 
 def get_rag_engine(
-    vector_store: IVectorRepository = Depends(get_vector_repository),
+    retriever: IDocumentRetriever = Depends(get_document_retriever),
 ) -> IRetrievalEngine:
     """
     Instancia y cachea el RagEngine:
-      - Recibe un IVectorRepository para obtener el FAISS index.
-      - Construye internamente la cadena RAG (prompt, LLM, retriever).
+    Construye el RagEngine pasándole el FAISS vector store desde el retriever.
     """
-    return RagEngine(vector_store)
+    return RagEngine(retriever.get_vector_store())
 
 
 def get_query_interactor(
