@@ -1,80 +1,54 @@
-from langchain.prompts import ChatPromptTemplate
+# app/infrastructure/langchain/retrieval_engine.py
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain.chains import create_retrieval_chain
 from langchain_openai import ChatOpenAI
+from app.domain.repositories.irag_engine import IRetrievalEngine
 from app.schemas.response import QueryResponse, Document as APIDocument
+from .prompts import get_rag_chat_prompt
 
 
-def build_rag_chain(vector_store):
-    # Prompt con variable 'context' porque es lo que recibe el LLM luego del formato
-    prompt = ChatPromptTemplate.from_messages(
-        [
-            (
-                "system",
-                "Eres un asistente legal experto en el Código de Tránsito Boliviano. "
-                "Utiliza únicamente la información proporcionada a continuación para responder. "
-                "Si no encuentras el monto exacto de la multa, pero puedes inferir si algo está prohibido o sancionado, explícalo claramente. "
-                "Si no hay información útil, responde: 'No se encontró información suficiente...'",
+class RagEngine(IRetrievalEngine):
+    """
+    Implementación de IRetrievalEngine usando LangChain + OpenAI + FAISS.
+    """
+
+    def __init__(self, vector_store):
+        # Construye la cadena RAG una sola vez
+        prompt = get_rag_chat_prompt()
+        # LLM configurado
+        llm = ChatOpenAI(temperature=0.7)
+
+        # Crea la cadena que combina documentos y los convierte en texto
+        combine = create_stuff_documents_chain(llm, prompt)
+        # Crea el retriever con el vector store
+        retriever = vector_store.as_retriever()
+
+        # Une el retriever con la cadena de combinación (RAG)
+        self.chain = create_retrieval_chain(retriever, combine)
+        self.vector_store = vector_store
+
+    def retrieve(self, query: str) -> QueryResponse:
+        """
+        Usa el pipeline RAG (retrieval + generación) con vector store ya cargado.
+        Devuelve una respuesta estructurada con texto y artículos fuente usados.
+        """
+        # 1) Generar respuesta
+        result = self.chain.invoke({"input": query})
+        # 2) Recolectar fragmentos usados
+        docs = self.vector_store.as_retriever().invoke(query)
+        documents_context = [
+            APIDocument(
+                id=doc.metadata["id"],
+                metadata=doc.metadata,
+                page_content=doc.page_content,
+                type="document",
+            )
+            for doc in docs
+        ]
+        # 3) Devolver QueryResponse
+        return QueryResponse(
+            answer=(
+                result.get("answer", "") if isinstance(result, dict) else str(result)
             ),
-            (
-                "human",
-                "{context}",
-            ),  # Esta variable es llenada por LangChain con los documentos recuperados
-        ]
-    )
-
-    # LLM configurado
-    llm = ChatOpenAI(temperature=0.7)
-
-    # Crea la cadena que combina documentos y los convierte en texto
-    combine_chain = create_stuff_documents_chain(llm, prompt)
-
-    # Crea el retriever con el vector store
-    retriever = vector_store.as_retriever()
-
-    # Une el retriever con la cadena de combinación (RAG)
-    return create_retrieval_chain(retriever, combine_chain)
-
-
-def process_query_with_retrieval(query: str, vector_store) -> QueryResponse:
-    """
-    Usa el pipeline RAG (retrieval + generación) con vector store ya cargado.
-    Devuelve una respuesta estructurada con texto y artículos fuente usados.
-    """
-    print("🔍 [RAG] Procesando consulta:", query)
-
-    # Construye el pipeline RAG
-    rag_chain = build_rag_chain(vector_store)
-
-    # Ejecuta el pipeline pasando la consulta como 'input'
-    result = rag_chain.invoke(
-        {"input": query}
-    )  # ¡IMPORTANTE! 'input' es la entrada esperada
-
-    # Extraer contenido de los fragmentos/artículos como fuentes
-    retrieved_docs = vector_store.as_retriever().invoke(query)
-    # Transformar LangChain.Document a tu esquema Document esperado por el frontend
-    documents_context = [
-        APIDocument(
-            id=doc.metadata.get("id", "sin_id"),
-            metadata=doc.metadata,
-            page_content=doc.page_content,
-            type="document",
+            context=documents_context,
         )
-        for doc in retrieved_docs
-    ]
-
-    # Debug: imprime el contexto enviado al LLM
-    context = "\n\n".join(
-        [
-            f"Fuente: {doc.metadata.get('source', 'desconocido')}\n{doc.page_content}"
-            for doc in retrieved_docs
-        ]
-    )
-    print("🧾 Contexto completo enviado al LLM:\n", context)
-
-    # Devuelve la respuesta estructurada
-    return QueryResponse(
-        answer=result.get("answer", "") if isinstance(result, dict) else str(result),
-        context=documents_context,
-    )

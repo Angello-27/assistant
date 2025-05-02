@@ -7,7 +7,6 @@ from app.infrastructure.persistence.document_loader import FileSystemDocumentLoa
 from app.infrastructure.persistence.faiss_repository import FAISSRepository
 from app.infrastructure.utils.nlp.splitter import split_document_spacy
 from app.domain.entities.fragment import Fragment
-from app.infrastructure.langchain.retrieval_engine import process_query_with_retrieval
 
 
 class DocumentRetriever(IDocumentRetriever):
@@ -49,8 +48,8 @@ class DocumentRetriever(IDocumentRetriever):
             fragments.extend(split_document_spacy(content, source))
         return self.repo.build(fragments)
 
-    def retrieve(self, query: str):
+    def get_vector_store(self):
         """
-        Llama al motor RAG para procesar la consulta contra el vector store.
+        Devuelve el vector store.
         """
-        return process_query_with_retrieval(query, self.vector_store)
+        return self.vector_store

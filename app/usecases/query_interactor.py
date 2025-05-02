@@ -1,6 +1,7 @@
 # app/usecases/query_interactor.py
 from app.domain.repositories.idocument_retriever import IDocumentRetriever
 from app.domain.repositories.iquery_expander import IQueryExpander
+from app.domain.repositories.irag_engine import IRetrievalEngine
 from app.schemas.response import QueryResponse
 
 
@@ -14,9 +15,11 @@ class QueryInteractor:
         self,
         document_retriever: IDocumentRetriever,
         query_expander: IQueryExpander,
+        retrieval_engine: IRetrievalEngine,
     ):
         self.document_retriever = document_retriever
         self.query_expander = query_expander
+        self.retrieval_engine = retrieval_engine
 
     def execute(self, query: str) -> QueryResponse:
         """
@@ -26,6 +29,5 @@ class QueryInteractor:
         """
         # 1) Aplicar jerga / sinónimos
         expanded = self.query_expander.expand(query)
-
-        # 2) Recuperar la respuesta desde FAISS / RAG
-        return self.document_retriever.retrieve(expanded)
+        # 2) Delegar a RAG engine (que internamente usará el vector_store ya cargado)
+        return self.retrieval_engine.retrieve(expanded)
