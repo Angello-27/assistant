@@ -10,33 +10,32 @@ from .prompts import get_rag_chat_prompt
 class RagEngine(IRetrievalEngine):
     """
     Implementación de IRetrievalEngine usando LangChain + OpenAI + FAISS.
+    Construye la cadena RAG una sola vez al inicializar.
     """
 
     def __init__(self, vector_store):
-        # Construye la cadena RAG una sola vez
+        # 1) Preparar prompt
         prompt = get_rag_chat_prompt()
-        # LLM configurado
+        # 2) Instanciar LLM
         llm = ChatOpenAI(temperature=0.7)
-
-        # Crea la cadena que combina documentos y los convierte en texto
-        combine = create_stuff_documents_chain(llm, prompt)
-        # Crea el retriever con el vector store
+        # 3) Crear sub-chain de combinación de documentos
+        combine_chain = create_stuff_documents_chain(llm, prompt)
+        # 4) Crear retriever sobre vector_store
         retriever = vector_store.as_retriever()
-
-        # Une el retriever con la cadena de combinación (RAG)
-        self.chain = create_retrieval_chain(retriever, combine)
+        # 5) Armar cadena RAG completa
+        self.chain = create_retrieval_chain(retriever, combine_chain)
         self.vector_store = vector_store
 
     def retrieve(self, query: str) -> QueryResponse:
         """
-        Usa el pipeline RAG (retrieval + generación) con vector store ya cargado.
-        Devuelve una respuesta estructurada con texto y artículos fuente usados.
+        Ejecuta la cadena RAG con la consulta dada.
+        Devuelve QueryResponse con texto y contexto (artículos fuente).
         """
-        # 1) Generar respuesta
+        # Ejecutar pipeline RAG
         result = self.chain.invoke({"input": query})
-        # 2) Recolectar fragmentos usados
+        # Recuperar documentos para el contexto
         docs = self.vector_store.as_retriever().invoke(query)
-        documents_context = [
+        context = [
             APIDocument(
                 id=doc.metadata["id"],
                 metadata=doc.metadata,
@@ -45,10 +44,9 @@ class RagEngine(IRetrievalEngine):
             )
             for doc in docs
         ]
-        # 3) Devolver QueryResponse
         return QueryResponse(
             answer=(
                 result.get("answer", "") if isinstance(result, dict) else str(result)
             ),
-            context=documents_context,
+            context=context,
         )

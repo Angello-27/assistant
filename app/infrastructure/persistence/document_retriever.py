@@ -50,6 +50,6 @@ class DocumentRetriever(IDocumentRetriever):
 
     def get_vector_store(self):
         """
-        Devuelve el vector store.
+        Devuelve el FAISS vector store, para pasarlo al RagEngine.
         """
         return self.vector_store

@@ -11,6 +11,7 @@ from app.domain.repositories.ivector_repository import IVectorRepository
 class FAISSRepository(IVectorRepository):
     """
     Implementación de IVectorRepository usando FAISS en disco.
+    Persiste el índice en `persist_path`.
     """
 
     def __init__(self, persist_path: str = "faiss_index"):

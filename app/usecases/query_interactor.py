@@ -24,10 +24,10 @@ class QueryInteractor:
     def execute(self, query: str) -> QueryResponse:
         """
         1) Expande la consulta usando el expander inyectado.
-        2) Llama al retriever inyectado para obtener la respuesta.
+        2) Llama al motor RAG inyectado para obtener la respuesta.
         3) Retorna un QueryResponse con 'answer' y 'context'.
         """
-        # 1) Aplicar jerga / sinónimos
+        # 1) Normalizar jerga / sinónimos
         expanded = self.query_expander.expand(query)
         # 2) Delegar a RAG engine (que internamente usará el vector_store ya cargado)
         return self.retrieval_engine.retrieve(expanded)
