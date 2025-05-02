@@ -1,18 +1,17 @@
 # app/infrastructure/persistence/document_loader.py
-
-from langchain_community.document_loaders import DirectoryLoader, TextLoader
 from typing import List
-from langchain.document_loaders import Document
+from langchain_community.document_loaders import DirectoryLoader, TextLoader
+from langchain.docstore.document import Document as LcDocument
 from app.domain.repositories.idocument_loader import IDocumentLoader
 
 
-class DocumentLoader(IDocumentLoader):
+class FileSystemDocumentLoader(IDocumentLoader):
     """
-    Implementación de IDocumentLoader que utiliza LangChain Community
-    para cargar .txt desde un directorio.
+    Implementación de IDocumentLoader que carga todos los .txt de un directorio
+    usando LangChain DirectoryLoader + TextLoader.
     """
 
-    def load_all(self, directory_path: str) -> List[Document]:
+    def load_all(self, directory_path: str) -> List[LcDocument]:
         loader = DirectoryLoader(
             directory_path,
             glob="*.txt",

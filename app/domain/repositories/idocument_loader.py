@@ -1,7 +1,7 @@
 # app/domain/repositories/idocument_loader.py
 from abc import ABC, abstractmethod
 from typing import List
-from langchain.document_loaders import Document
+from langchain.docstore.document import Document as LcDocument
 
 
 class IDocumentLoader(ABC):
@@ -11,9 +11,9 @@ class IDocumentLoader(ABC):
     """
 
     @abstractmethod
-    def load_all(self, directory_path: str) -> List[Document]:
+    def load_all(self, directory_path: str) -> List[LcDocument]:
         """
-        Debe devolver todos los documentos crudos (por ejemplo, langchain.Document)
+        Debe devolver todos los documentos crudos (langchain.docstore.document.Document)
         contenidos en el directorio.
         """
-        pass
+        ...

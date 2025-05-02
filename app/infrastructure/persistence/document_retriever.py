@@ -1,42 +1,52 @@
-from app.infrastructure.persistence.document_loader import load_documents_from_directory
+# app/infrastructure/persistence/document_retriever.py
+from typing import List
+from app.domain.repositories.idocument_retriever import IDocumentRetriever
+from app.domain.repositories.idocument_loader import IDocumentLoader
 from app.infrastructure.persistence.faiss_repository import FAISSRepository
-from app.infrastructure.langchain.retrieval_engine import process_query_with_retrieval
+from app.infrastructure.persistence.document_loader import FileSystemDocumentLoader
 from app.infrastructure.utils.nlp.splitter import split_document_spacy
+from app.domain.entities.fragment import Fragment
+from app.infrastructure.langchain.retrieval_engine import process_query_with_retrieval
 
 
-class DocumentRetriever:
+class DocumentRetriever(IDocumentRetriever):
     """
-    Orquesta el flujo: cargar documentos → fragmentar → vectorizar → consultar.
-    Permite seleccionar la estrategia de fragmentación.
+    Implementación de IDocumentRetriever usando FAISS + RAG.
+    Inyecta un loader de documentos y un repositorio FAISS.
     """
 
-    def __init__(self, documents_directory: str, split_mode: str = "articles"):
-        print("📦 [Retriever] Inicializando DocumentRetriever...")
+    def __init__(
+        self,
+        documents_directory: str,
+        loader: IDocumentLoader | None = None,
+        faiss_repo: FAISSRepository | None = None,
+    ):
         self.documents_directory = documents_directory
-        self.repo = FAISSRepository()  # repo ahora está disponible siempre
-
+        # si no se inyecta, usamos la implementación por defecto
+        self.loader = loader or FileSystemDocumentLoader()
+        self.repo = faiss_repo or FAISSRepository()
+        # intentar cargar índice en disco
         try:
             self.vector_store = self.repo.load_vectorstore()
-            print("✅ [Retriever] Vector store cargado desde disco.")
         except FileNotFoundError:
-            print("⚠️ [Retriever] Vector store no encontrado, reconstruyendo...")
             self.vector_store = self._prepare_vectorstore()
 
     def _prepare_vectorstore(self):
-        print("⚙️ [Retriever] Fragmentando y vectorizando documentos...")
-        # Carga y divide documentos en fragmentos desde el directorio indicado
-        docs = load_documents_from_directory(self.documents_directory)
+        """
+        1. Carga documentos crudos via IDocumentLoader
+        2. Fragmenta cada texto con spaCy/Regex
+        3. Construye y persiste el vectorstore FAISS
+        """
+        raw_docs = self.loader.load_all(self.documents_directory)
+        fragments: List[Fragment] = []
+        for raw in raw_docs:
+            content = raw.page_content
+            source = raw.metadata.get("source", "documento")
+            fragments.extend(split_document_spacy(content, source))
+        return self.repo.build_vectorstore(fragments)
 
-        fragments = []
-        for doc in docs:
-            content = doc.page_content
-            filename = doc.metadata.get("source", "documento")
-            print(f"📂 Cargando documento: {filename}")
-            fragments.extend(split_document_spacy(content, filename))
-        print(f"✅ [Retriever] Total de fragmentos generados: {len(fragments)}")
-
-        repo = FAISSRepository()
-        return repo.build_vectorstore(fragments)
-
-    def retrieve(self, query: str) -> str:
+    def retrieve(self, query: str):
+        """
+        Llama al motor RAG para procesar la consulta contra el vector store.
+        """
         return process_query_with_retrieval(query, self.vector_store)

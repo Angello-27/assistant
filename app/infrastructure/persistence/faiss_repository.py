@@ -1,24 +1,29 @@
+# app/infrastructure/persistence/faiss_repository.py
 import os
 from typing import List
 from langchain_openai import OpenAIEmbeddings
 from langchain_community.vectorstores import FAISS
-from langchain.docstore.document import Document
+from langchain.docstore.document import Document as LCDocument
 from app.domain.entities.fragment import Fragment
+from app.domain.repositories.ivector_repository import IVectorRepository
 
 
-class FAISSRepository:
+class FAISSRepository(IVectorRepository):
     """
-    Clase responsable de almacenar y consultar documentos en FAISS
-    a partir de los documentos utilizando OpenAIEmbeddings.
+    Implementación de IVectorRepository usando FAISS en disco.
     """
 
     def __init__(self, persist_path: str = "faiss_index"):
         self.persist_path = persist_path
         self.embeddings = OpenAIEmbeddings()
 
-    def build_vectorstore(self, fragments: List[Fragment]) -> FAISS:
+    def build(self, fragments: List[Fragment]) -> FAISS:
+        """
+        Construye un FAISS index a partir de la lista de Fragment,
+        lo persiste en disco y lo retorna.
+        """
         docs = [
-            Document(
+            LCDocument(
                 page_content=frag.content,
                 metadata={
                     "source": frag.source,
@@ -30,19 +35,21 @@ class FAISSRepository:
             )
             for frag in fragments
         ]
+        index = FAISS.from_documents(docs, self.embeddings)
+        print("[FAISS] Guardando índice FAISS en disco...")
+        index.save_local(self.persist_path)
+        print(f"[FAISS] Vector store guardado en: {self.persist_path}")
+        return index
 
-        vectorstore = FAISS.from_documents(docs, self.embeddings)
-        print("💾 [FAISS] Guardando índice FAISS en disco...")
-        vectorstore.save_local(self.persist_path)
-        print("✅ [FAISS] Vector store guardado en:", self.persist_path)
-        return vectorstore
-
-    def load_vectorstore(self) -> FAISS:
+    def load(self) -> FAISS:
+        """
+        Carga el FAISS index desde disco.
+        """
         if not os.path.exists(self.persist_path):
             raise FileNotFoundError(
-                "FAISS index no encontrado. Debes generarlo primero."
+                f"FAISS index no encontrado en {self.persist_path}. Genera el índice primero."
             )
-        print("📁 [FAISS] Intentando cargar vector store desde disco...")
+        print("[FAISS] Cargando índice FAISS desde disco...")
         return FAISS.load_local(
             self.persist_path,
             self.embeddings,
