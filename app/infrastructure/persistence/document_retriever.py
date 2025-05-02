@@ -54,4 +54,4 @@ class DocumentRetriever(IDocumentRetriever):
         """
         Devuelve la instancia FAISS (cargada o recién construida).
         """
-        return self._vs
+        return self.vector_store
