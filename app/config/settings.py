@@ -15,4 +15,4 @@ class Settings(BaseSettings):
 
 
 # Instancia global de configuración
-tsettings = Settings()
+settings = Settings()
