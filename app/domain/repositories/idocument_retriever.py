@@ -5,12 +5,14 @@ from app.schemas.response import QueryResponse
 
 class IDocumentRetriever(ABC):
     """
-    Contrato para cualquier servicio de recuperación de documentos.
+    Contrato para recuperadores de documentos.
+    Define la operación de búsqueda/retrieval que devuelve un QueryResponse.
     """
 
     @abstractmethod
     def retrieve(self, query: str) -> QueryResponse:
         """
-        Retorna un QueryResponse con la respuesta y contexto de documentos.
+        Ejecuta la búsqueda de la consulta expandida y devuelve
+        un objeto QueryResponse con la respuesta y el contexto.
         """
-        pass
+        ...

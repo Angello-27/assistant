@@ -27,7 +27,7 @@ async def ask_question(
     interactor: QueryInteractor = Depends(get_query_interactor),
 ):
     """
-    Endpoint principal que procesa una consulta legal.
+    Endpoint principal: recibe la consulta, la expande y recupera la respuesta.
     Llama al caso de uso QueryInteractor.
     """
     try:

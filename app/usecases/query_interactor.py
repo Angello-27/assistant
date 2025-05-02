@@ -1,49 +1,31 @@
-import openai
-from langchain_openai import ChatOpenAI
-from langchain.chains import create_retrieval_chain
-from langchain.prompts import ChatPromptTemplate
-from langchain.chains.combine_documents import create_stuff_documents_chain
-from app.config.settings import settings
+# app/usecases/query_interactor.py
+from app.domain.repositories.idocument_retriever import IDocumentRetriever
+from app.domain.repositories.iquery_expander import IQueryExpander
 from app.schemas.response import QueryResponse
-from app.infrastructure.utils.query_expander import expand_query
-
-# Configurar la API key de OpenAI
-openai.api_key = settings.OPENAI_API_KEY
 
 
-class QueryService:
-    def __init__(self, document_retriever=None):
-        """
-        document_retriever: instancia de DocumentRetriever (opcional).
-        Si se proporciona, se usará para la búsqueda en documentos locales.
-        """
+class QueryInteractor:
+    """
+    Caso de uso: expande la consulta y la envía al recuperador de documentos.
+    Orquesta el flujo de negocio sin preocuparse de detalles de infraestructura.
+    """
+
+    def __init__(
+        self,
+        document_retriever: IDocumentRetriever,
+        query_expander: IQueryExpander,
+    ):
         self.document_retriever = document_retriever
+        self.query_expander = query_expander
 
-    def query(self, query: str, use_retrieval: bool = True) -> QueryResponse:
+    def execute(self, query: str) -> QueryResponse:
         """
-        Procesa una consulta:
-          - Si use_retrieval es True y se ha proporcionado un document_retriever,
-            se utiliza la búsqueda en documentos locales.
-          - De lo contrario, se procesa la consulta de forma directa usando la nueva cadena LCEL.
+        1) Expande la consulta usando el expander inyectado.
+        2) Llama al retriever inyectado para obtener la respuesta.
+        3) Retorna un QueryResponse con 'answer' y 'context'.
         """
-        print(
-            f"📨 [QueryService] Recibida consulta: '{query}' | use_retrieval={use_retrieval}"
-        )
-        expanded_query = expand_query(query)
-        print(f"📨 [QueryService] Recibida consulta enriquecida: '{expanded_query}'")
-        if use_retrieval and self.document_retriever:
-            print("🔁 [QueryService] Usando pipeline RAG...")
-            return self.document_retriever.retrieve(expanded_query)
-        # Invoca la nueva cadena LCEL pasando un diccionario con el valor de "query"
-        answer = self.chain.invoke({"query": expanded_query})
-        return QueryResponse(answer=answer, sources=[])
+        # 1) Aplicar jerga / sinónimos
+        expanded = self.query_expander.expand(query)
 
-
-def get_query_service():
-    """
-    Método auxiliar para inyectar QueryService en rutas de FastAPI.
-    """
-    from app.services.document_retriever import DocumentRetriever
-
-    retriever = DocumentRetriever("documents")
-    return QueryService(document_retriever=retriever)
+        # 2) Recuperar la respuesta desde FAISS / RAG
+        return self.document_retriever.retrieve(expanded)
