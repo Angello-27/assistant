@@ -1,8 +1,9 @@
 # app/infrastructure/langchain/retrieval_engine.py
 import logging
-from typing import List
+from typing import List, Any
 
 from langchain_openai import ChatOpenAI
+from langchain.schema import HumanMessage, AIMessage
 from langchain.chains import create_history_aware_retriever, create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
 
@@ -18,12 +19,12 @@ logger = logging.getLogger(__name__)
 
 class RagEngine(IRetrievalEngine):
     """
-    Motor RAG basado en LangChain.
+    Motor RAG basado en LangChain LCEL.
     Combina:
       - Reformulación de preguntas (follow-up → autocontenida).
       - Recuperación de documentos (vector store FAISS).
       - Generación de respuesta con contexto legal.
-      - Memoria de la conversación completa.
+      - Gestión del historial de la conversación completa.
     """
 
     def __init__(self, vector_store):
@@ -43,7 +44,7 @@ class RagEngine(IRetrievalEngine):
         self.stuff_chain = create_stuff_documents_chain(
             llm=self.llm,
             prompt=qa_prompt,
-            document_variable_name="context",  # debe coincidir con MessagesPlaceholder("context")
+            document_variable_name="context",
         )
 
         # 4) Cadena completa RAG: recuperación + combinación
@@ -52,23 +53,27 @@ class RagEngine(IRetrievalEngine):
             combine_docs_chain=self.stuff_chain,
         )
 
-        # Guardamos store para extraer contexto manual si queremos top-k
+        # 5) Vector store para consultas directas
         self.vector_store = vector_store
+
+        # 6) Historial de conversación: lista de HumanMessage y AIMessage
+        self.chat_history: List[Any] = []
 
     def retrieve(self, query: str) -> QueryResponse:
         """
         Ejecuta el pipeline RAG completo:
-          1) Reformula la pregunta usando el prompt de condensación.
-          2) Recupera documentos relevantes mediante FAISS.
-          3) Genera la respuesta con contexto y sugerencia práctica.
-          4) Devuelve un QueryResponse con answer y contexto de top-3.
+          1) Envía el historial y la consulta a la cadena.
+          2) Obtiene la respuesta generada.
+          3) Recupera manualmente los 3 documentos más relevantes mediante invocación.
+          4) Guarda tanto la entrada como la respuesta en el historial.
+          5) Devuelve QueryResponse.
         """
         try:
             # Ejecutar la cadena conversacional: reformulación + recuperación + generación
             result = self.chain.invoke(
                 {
                     "input": query,
-                    "chat_history": [],
+                    "chat_history": self.chat_history,
                 }
             )
         except Exception as e:
@@ -78,8 +83,10 @@ class RagEngine(IRetrievalEngine):
         # La clave de la respuesta puede variar entre 'answer' o 'result'
         answer = result.get("answer") or result.get("result") or ""
 
-        # Opcional: extraer top-3 documentos manualmente
-        docs = self.vector_store.as_retriever().get_relevant_documents(query)
+        # Extraer top-3 documentos usando invoke sobre el runnable
+        retriever = self.vector_store.as_retriever()
+        docs = retriever.invoke(query)
+
         context: List[APIDocument] = []
         for doc in docs[:3]:
             context.append(
@@ -94,4 +101,9 @@ class RagEngine(IRetrievalEngine):
                 )
             )
 
+        # Guardar en historial para la siguiente interacción
+        self.chat_history.append(HumanMessage(content=query))
+        self.chat_history.append(AIMessage(content=answer))
+
+        # Devolver respuesta y contexto
         return QueryResponse(answer=answer, context=context)
