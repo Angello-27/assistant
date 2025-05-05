@@ -47,7 +47,11 @@ class DocumentRetriever(IDocumentRetriever):
         for raw in raw_docs:
             content = raw.page_content
             source = raw.metadata.get("source", "documento")
-            fragments.extend(split_document_spacy(content, source))
+            # Generar fragments para este documento
+            doc_frags = split_document_spacy(content, source)
+            fragments.extend(doc_frags)
+        # Imprimir total de fragments creados
+        print(f"[Retriever] Total de fragments creados: {len(fragments)}")
         return self.repo.build(fragments)
 
     def get_vector_store(self) -> FAISS:

@@ -1,17 +1,17 @@
-# app/infrastructure/utils/nlp/splitter.py
+# File: app/infrastructure/utils/nlp/splitter.py
 import re
 import uuid
 from typing import List
 from app.domain.entities.fragment import Fragment
-from app.infrastructure.utils.nlp.utils import extract_keywords
-from langchain_text_splitters import RecursiveCharacterTextSplitter
+from app.infrastructure.utils.nlp.utils import extract_keywords, nlp
 
 
-def is_structured(text: str) -> bool:
+def split_into_paragraphs(text: str) -> List[str]:
     """
-    Detecta si el bloque contiene al menos un 'Artículo N°'.
+    Divide el texto completo en párrafos separados por líneas en blanco.
     """
-    return bool(re.search(r"Artículo\s+\d+", text))
+    paragraphs = re.split(r"\n\s*\n", text)
+    return [p.strip() for p in paragraphs if p.strip()]
 
 
 def generate_id(doc_name: str, index: int) -> str:
@@ -21,69 +21,100 @@ def generate_id(doc_name: str, index: int) -> str:
     return f"{doc_name.replace('.txt','')}-{index}-{uuid.uuid4().hex[:8]}"
 
 
-def normalize_chunk(chunk: str) -> str:
+def process_article_block(paragraph: str, doc_name: str, index: int) -> List[Fragment]:
     """
-    Normaliza espacios y saltos de línea en un solo párrafo.
+    Extrae fragmentos de un párrafo que contenga artículos numerados y variantes,
+    manteniendo sus incisos dentro del mismo bloque.
+    Soporta encabezados como:
+      - Artículo 1°
+      - Artículo Único
+      - Artículo Transitorio
+      - Artículo Final
+      - Disposición Final
     """
-    return chunk.strip().replace("\n", " ").replace("  ", " ").strip()
+    fragments: List[Fragment] = []
+    # Patrón para encabezados de artículo o disposición final
+    article_header = r"(?:Art[ií]culo(?:\s+(?:Único|Transitorio|Final))?(?:\s+\d+°?)?|Disposición\s+Final)"
+    # Capturar desde el encabezado hasta justo antes del siguiente encabezado o fin de texto
+    pattern = re.compile(
+        rf"({article_header}[\s\S]*?)(?=(?:\n{article_header}|$))",
+        re.IGNORECASE,
+    )
+
+    for match in pattern.finditer(paragraph):
+        block = match.group(1).strip()
+        # Filtrar idiomas no-español
+        doc = nlp(block)
+        lang_meta = doc._.language
+        if lang_meta.get("language") != "es" or lang_meta.get("score", 0) < 0.8:
+            continue
+
+        # Extraer etiquetas y sinónimos
+        tags = extract_keywords(block)
+        synonyms = []
+
+        frag_id = generate_id(doc_name, index)
+        fragments.append(
+            Fragment(
+                id=frag_id,
+                content=block,
+                source=doc_name,
+                position=index,
+                tags=tags,
+                synonyms=synonyms,
+            )
+        )
+        index += 1
+    return fragments
 
 
-def extract_articles(text: str) -> List[str]:
+def process_free_block(paragraph: str, doc_name: str, index: int) -> Fragment:
     """
-    Extrae cada Artículo completo con su número y contenido.
+    Procesa un párrafo libre sin encabezados especiales.
     """
-    pattern = re.compile(r"(Artículo\s+\d+.*?)(?=(\nArtículo\s+\d+|\Z))", re.DOTALL)
-    return [m.group(1) for m in pattern.finditer(text)]
+    # Filtrar idioma
+    doc = nlp(paragraph)
+    lang_meta = doc._.language
+    if lang_meta.get("language") != "es" or lang_meta.get("score", 0) < 0.8:
+        return None
+
+    clean = paragraph.replace("\n", " ").strip()
+    tags = extract_keywords(clean)
+    synonyms = []
+
+    frag_id = generate_id(doc_name, index)
+    return Fragment(
+        id=frag_id,
+        content=clean,
+        source=doc_name,
+        position=index,
+        tags=tags,
+        synonyms=synonyms,
+    )
 
 
 def split_document_spacy(text: str, doc_name: str) -> List[Fragment]:
     """
-    Divide texto en fragmentos:
-      1. LangChain para chunks grandes.
-      2. Regex para separar Artículos.
-      3. Limpieza y extracción de keywords con spaCy.
+    Divide el texto en fragmentos:
+      1) Separa en párrafos.
+      2) Si un párrafo inicia con 'Artículo' o 'Disposición Final', trata todos
+         los artículos/variantes como bloques únicos con incisos.
+      3) En otro caso, crea fragmento libre.
     """
-    splitter = RecursiveCharacterTextSplitter(chunk_size=5000, chunk_overlap=300)
-    chunks = splitter.split_text(text)
-    index = 0
+    paragraphs = split_into_paragraphs(text)
     fragments: List[Fragment] = []
+    index = 0
 
-    for chunk in chunks:
-        block = chunk.strip()
-        if is_structured(block):
-            for art in extract_articles(block):
-                clean = normalize_chunk(art)
-                if not clean:
-                    continue
-                fragment_id = generate_id(doc_name, index)
-                tags = extract_keywords(clean)
-                fragments.append(
-                    Fragment(
-                        id=fragment_id,
-                        content=clean,
-                        source=doc_name,
-                        position=index,
-                        tags=tags,
-                        synonyms=[],
-                    )
-                )
-                index += 1
+    for para in paragraphs:
+        # Detecta encabezado de artículo o disposición final
+        if re.match(r"^(?:Art[ií]culo|Disposición\s+Final)", para, re.IGNORECASE):
+            arts = process_article_block(para, doc_name, index)
+            fragments.extend(arts)
+            index += len(arts)
         else:
-            # Bloque libre (e.g. decretos, intro)
-            clean = normalize_chunk(block)
-            if clean:
-                fragment_id = generate_id(doc_name, index)
-                tags = extract_keywords(clean)
-                fragments.append(
-                    Fragment(
-                        id=fragment_id,
-                        content=clean,
-                        source=doc_name,
-                        position=index,
-                        tags=tags,
-                        synonyms=[],
-                    )
-                )
+            frag = process_free_block(para, doc_name, index)
+            if frag:
+                fragments.append(frag)
                 index += 1
 
     return fragments
