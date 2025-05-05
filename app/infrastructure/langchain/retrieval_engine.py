@@ -65,7 +65,12 @@ class RagEngine(IRetrievalEngine):
         """
         try:
             # Ejecutar la cadena conversacional: reformulación + recuperación + generación
-            result = self.chain({"query": query})
+            result = self.chain.invoke(
+                {
+                    "input": query,
+                    "chat_history": [],
+                }
+            )
         except Exception as e:
             logger.error("Error en pipeline RAG: %s", e, exc_info=True)
             raise RuntimeError("Fallo en el motor RAG.") from e
