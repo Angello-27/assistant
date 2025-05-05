@@ -1,5 +1,6 @@
 # app/entrypoints/http/dependencies.py
 from fastapi import Depends
+from functools import lru_cache
 from app.domain.repositories.idocument_retriever import IDocumentRetriever
 from app.domain.repositories.idocument_loader import IDocumentLoader
 from app.domain.repositories.ivector_repository import IVectorRepository
@@ -13,6 +14,7 @@ from app.domain.repositories.iquery_expander import IQueryExpander
 from app.usecases.query_interactor import QueryInteractor
 
 
+@lru_cache()
 def get_document_loader() -> IDocumentLoader:
     """
     Provee la implementación por defecto de IDocumentLoader.
@@ -21,6 +23,7 @@ def get_document_loader() -> IDocumentLoader:
     return FileSystemDocumentLoader()
 
 
+@lru_cache()
 def get_vector_repository() -> IVectorRepository:
     """
     Provee la implementación por defecto de IVectorRepository.
@@ -29,6 +32,7 @@ def get_vector_repository() -> IVectorRepository:
     return FAISSRepository()
 
 
+@lru_cache()
 def get_document_retriever(
     loader: IDocumentLoader = Depends(get_document_loader),
     vector_repo: IVectorRepository = Depends(get_vector_repository),
@@ -47,6 +51,7 @@ def get_document_retriever(
     )
 
 
+@lru_cache()
 def get_query_expander() -> IQueryExpander:
     """
     Provee la implementación por defecto de IQueryExpander.
@@ -55,6 +60,7 @@ def get_query_expander() -> IQueryExpander:
     return QueryExpander()
 
 
+@lru_cache()
 def get_rag_engine(
     retriever: IDocumentRetriever = Depends(get_document_retriever),
 ) -> IRetrievalEngine:
@@ -65,6 +71,7 @@ def get_rag_engine(
     return RagEngine(retriever.get_vector_store())
 
 
+@lru_cache()
 def get_query_interactor(
     retriever: IDocumentRetriever = Depends(get_document_retriever),
     expander: IQueryExpander = Depends(get_query_expander),

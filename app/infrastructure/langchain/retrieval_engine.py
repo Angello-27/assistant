@@ -104,6 +104,7 @@ class RagEngine(IRetrievalEngine):
         # Guardar en historial para la siguiente interacción
         self.chat_history.append(HumanMessage(content=query))
         self.chat_history.append(AIMessage(content=answer))
+        print(f"[RAG] Historial actual: {self.chat_history}")
 
         # Devolver respuesta y contexto
         return QueryResponse(answer=answer, context=context)
