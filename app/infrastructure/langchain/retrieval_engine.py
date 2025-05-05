@@ -3,9 +3,8 @@ import logging
 from typing import List
 
 from langchain_openai import ChatOpenAI
-from langchain.chains import ConversationalRetrievalChain
-from langchain.memory import ConversationBufferMemory
-from langchain_core.language_models.base import BaseLanguageModel
+from langchain.chains import create_history_aware_retriever, create_retrieval_chain
+from langchain.chains.combine_documents import create_stuff_documents_chain
 
 from app.domain.repositories.irag_engine import IRetrievalEngine
 from app.schemas.response import QueryResponse, Document as APIDocument
@@ -29,25 +28,31 @@ class RagEngine(IRetrievalEngine):
 
     def __init__(self, vector_store):
         # 1) Inicializar LLM: ChatOpenAI de la comunidad
-        self.llm: BaseLanguageModel = ChatOpenAI(temperature=0.7)
+        self.llm = ChatOpenAI(temperature=0.7)
 
         # 2) Configurar memoria de conversación (almacena mensajes humanos y respuestas)
-        self.memory = ConversationBufferMemory(
-            memory_key="chat_history", return_messages=True
-        )
-
-        # 3) Construir la cadena conversacional RAG
-        #    - question_generator_chain_kwargs: prompt para reformular follow-up
-        #    - combine_docs_chain_kwargs: prompt para generación final con contexto legal
-        self.chain = ConversationalRetrievalChain.from_llm(
+        reformulate_prompt = get_condense_question_prompt()
+        self.history_aware_retriever = create_history_aware_retriever(
             llm=self.llm,
             retriever=vector_store.as_retriever(),
-            memory=self.memory,
-            question_generator_chain_kwargs={"prompt": get_condense_question_prompt()},
-            combine_docs_chain_kwargs={"prompt": get_reformulate_question_prompt()},
+            prompt=reformulate_prompt,
         )
 
-        # Guardar referencia al vector_store para obtener top-k manualmente
+        # 3) Cadena de combinación "stuff" con contexto
+        qa_prompt = get_reformulate_question_prompt()
+        self.stuff_chain = create_stuff_documents_chain(
+            llm=self.llm,
+            prompt=qa_prompt,
+            document_variable_name="context",  # debe coincidir con MessagesPlaceholder("context")
+        )
+
+        # 4) Cadena completa RAG: recuperación + combinación
+        self.chain = create_retrieval_chain(
+            retriever=self.history_aware_retriever,
+            combine_docs_chain=self.stuff_chain,
+        )
+
+        # Guardamos store para extraer contexto manual si queremos top-k
         self.vector_store = vector_store
 
     def retrieve(self, query: str) -> QueryResponse:
@@ -60,15 +65,15 @@ class RagEngine(IRetrievalEngine):
         """
         try:
             # Ejecutar la cadena conversacional: reformulación + recuperación + generación
-            result = self.chain({"question": query})
+            result = self.chain({"query": query})
         except Exception as e:
             logger.error("Error en pipeline RAG: %s", e, exc_info=True)
             raise RuntimeError("Fallo en el motor RAG.") from e
 
-        # Obtener la respuesta generada
-        answer = result.get("answer", "").strip()
+        # La clave de la respuesta puede variar entre 'answer' o 'result'
+        answer = result.get("answer") or result.get("result") or ""
 
-        # 4) Extraer manualmente los top-3 documentos para el contexto
+        # Opcional: extraer top-3 documentos manualmente
         docs = self.vector_store.as_retriever().get_relevant_documents(query)
         context: List[APIDocument] = []
         for doc in docs[:3]:

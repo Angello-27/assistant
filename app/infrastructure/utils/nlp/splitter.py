@@ -67,7 +67,7 @@ def split_document_spacy(text: str, doc_name: str) -> List[Fragment]:
                         synonyms=[],
                     )
                 )
-                indexs += 1
+                index += 1
         else:
             # Bloque libre (e.g. decretos, intro)
             clean = normalize_chunk(block)

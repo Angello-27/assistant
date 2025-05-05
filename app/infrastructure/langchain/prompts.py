@@ -38,6 +38,6 @@ def get_condense_question_prompt() -> ChatPromptTemplate:
                 "y devuelve únicamente la pregunta reformulada, sin añadir nada más.",
             ),
             MessagesPlaceholder(variable_name="chat_history"),
-            ("human", "{question}"),
+            ("human", "{input}"),
         ]
     )
