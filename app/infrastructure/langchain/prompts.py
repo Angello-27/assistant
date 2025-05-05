@@ -15,11 +15,15 @@ def get_reformulate_question_prompt() -> ChatPromptTemplate:
                 "system",
                 "Eres un asistente legal experto en el Código de Tránsito de Bolivia. "
                 "Utiliza únicamente la información proporcionada a continuación para responder a la consulta del usuario. "
-                "Contexto recuperado:{context}"
                 "Si no encuentras el monto exacto de la multa, pero puedes inferir si algo está prohibido o sancionado, explícalo claramente. "
                 "Si no hay información útil, responde: 'No se encontró información suficiente en los documentos proporcionados.'. "
                 "Al final de tu respuesta, incluye una breve sugerencia práctica de acción que el usuario pueda tomar.",
             ),
+            # Aquí inyectamos el texto de contextos recuperados:
+            ("system", "{context}"),
+            # Luego el historial de la conversación:
+            MessagesPlaceholder(variable_name="chat_history"),
+            # Finalmente la pregunta actual:
             ("human", "{input}"),
         ]
     )

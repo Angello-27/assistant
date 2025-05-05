@@ -68,11 +68,11 @@ class RagEngine(IRetrievalEngine):
           4) Guarda tanto la entrada como la respuesta en el historial.
           5) Devuelve QueryResponse.
         """
+        # antes de invoke:
+        user_only_history = [
+            m for m in self.chat_history if isinstance(m, HumanMessage)
+        ]
         try:
-            # antes de invoke:
-            user_only_history = [
-                m for m in self.chat_history if isinstance(m, HumanMessage)
-            ]
             # Ejecutar la cadena conversacional: reformulación + recuperación + generación
             result = self.chain.invoke(
                 {
@@ -92,7 +92,7 @@ class RagEngine(IRetrievalEngine):
         docs = retriever.invoke(query)
 
         context: List[APIDocument] = []
-        for doc in docs[:3]:
+        for doc in docs[:4]:
             context.append(
                 APIDocument(
                     id=doc.metadata.get("id", "sin_id"),

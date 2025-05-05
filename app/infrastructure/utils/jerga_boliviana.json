@@ -192,8 +192,10 @@
         "embotellamiento",
         "congestión",
         "atasco",
+        "trancadera",
         "parada en la calle",
-        "cuello de botella"
+        "cuello de botella",
+        "circulación congestionada"
     ],
     "arrestar": [
         "detener",
@@ -234,6 +236,7 @@
     ],
     "cinturón de seguridad": [
         "cinturón",
+        "arnés",
         "seguro de viaje",
         "correa de seguridad"
     ],
@@ -347,7 +350,8 @@
         "ventanas oscuras",
         "vidrios tintados",
         "vidrios negros",
-        "vidrios oscuros"
+        "vidrios oscuros",
+        "vidrios oscurecido"
     ],
     "UTOP": [
         "U.T.O.P",
@@ -398,5 +402,290 @@
         "pasar por el otro lado",
         "hacer la pasada por la derecha",
         "salir por el carril derecho"
+    ],
+    "acera": [
+        "banqueta",
+        "vereda",
+        "andén",
+        "espacio peatonal",
+        "paseo"
+    ],
+    "adelantamiento": [
+        "rebase",
+        "pasada",
+        "rebasada",
+        "ganar carril"
+    ],
+    "automóvil": [
+        "carro",
+        "auto",
+        "máquina",
+        "vehículo",
+        "nave",
+        "vehículo"
+    ],
+    "autopista": [
+        "ruta rápida",
+        "interoceánica",
+        "vía express",
+        "carretera veloz"
+    ],
+    "avenida": [
+        "boulevard",
+        "paseo",
+        "ruta urbana"
+    ],
+    "bicicleta": [
+        "bici",
+        "cleta",
+        "montañera"
+    ],
+    "brevete": [
+        "licencia",
+        "carnet de conducir"
+    ],
+    "calzada": [
+        "pavimento",
+        "asfalto",
+        "vía de rodaje"
+    ],
+    "calle": [
+        "ruta urbana",
+        "vía",
+        "tranca"
+    ],
+    "camino": [
+        "sendero",
+        "vía rural",
+        "trocha"
+    ],
+    "carga": [
+        "flete",
+        "mercancía",
+        "envoltorio"
+    ],
+    "carga máxima": [
+        "capacidad máxima",
+        "tonelaje límite"
+    ],
+    "carnet de propiedad": [
+        "título de propiedad",
+        "papeles del vehículo"
+    ],
+    "carretera": [
+        "ruta nacional",
+        "tranca",
+        "vía interprovincial"
+    ],
+    "carril": [
+        "callejón",
+        "sentido"
+    ],
+    "circulación": [
+        "tránsito",
+        "movilización"
+    ],
+    "circulación congestionada": [
+        "embotellamiento",
+        "atasco",
+        "trafico",
+        "trancadera",
+        "congestión"
+    ],
+    "circulación preferencial": [
+        "vía preferencial",
+        "paso prioritario"
+    ],
+    "corriente vehicular": [
+        "flujo de tránsito"
+    ],
+    "cruce de peatones": [
+        "paso de cebra",
+        "zebra",
+        "paso en las aceras",
+        "cruce peatonal"
+    ],
+    "cruce regulado": [
+        "cruce semaforizado"
+    ],
+    "cuneta": [
+        "alcantarilla",
+        "desagüe",
+        "sumidero"
+    ],
+    "curva": [
+        "recodo",
+        "zigzag"
+    ],
+    "derecho de circulación": [
+        "prioridad de paso"
+    ],
+    "detención": [
+        "alto",
+        "freno"
+    ],
+    "detención súbita": [
+        "frenazo",
+        "freno de emergencia"
+    ],
+    "eje de la vía": [
+        "centro del carril"
+    ],
+    "esquina": [
+        "chaflán",
+        "ángulo de calle"
+    ],
+    "estacionamiento": [
+        "parqueo",
+        "aparcamiento",
+        "zona de parqueo"
+    ],
+    "franja de seguridad": [
+        "zona de protección",
+        "cinta de seguridad"
+    ],
+    "garaje": [
+        "cochera",
+        "parqueadero cubierto"
+    ],
+    "hoja de ruta": [
+        "itinerario",
+        "plan de viaje"
+    ],
+    "ingeniería de tránsito": [
+        "gestión de tráfico"
+    ],
+    "isla de seguridad": [
+        "refugio peatonal"
+    ],
+    "limitación de acceso": [
+        "zona restringida"
+    ],
+    "limitación de estacionamiento": [
+        "prohibición de parqueo"
+    ],
+    "línea de detención de vehículos": [
+        "alto de línea"
+    ],
+    "línea de carril": [
+        "marca vial"
+    ],
+    "maniobra": [
+        "movimiento",
+        "viraje"
+    ],
+    "parada": [
+        "alto",
+        "detención"
+    ],
+    "paradero": [
+        "parada de bus",
+        "micropunto"
+    ],
+    "pasajero": [
+        "usuario",
+        "viajero"
+    ],
+    "paseos": [
+        "zonas de paseo"
+    ],
+    "paso a nivel": [
+        "nivel de cruce"
+    ],
+    "paso a desnivel": [
+        "zócalo divisor"
+    ],
+    "pendiente": [
+        "gradiente",
+        "inclinación"
+    ],
+    "peralte": [
+        "inclinación transversal"
+    ],
+    "peso máximo": [
+        "tonelaje límite"
+    ],
+    "polizón": [
+        "colado",
+        "chapuza"
+    ],
+    "remolque": [
+        "arrastre",
+        "grúa de remolque"
+    ],
+    "señal de tránsito": [
+        "señal vial",
+        "senalética"
+    ],
+    "terminal": [
+        "estación",
+        "paradero terminal"
+    ],
+    "vía expresa": [
+        "autopista",
+        "vía rápida"
+    ],
+    "zona escolar": [
+        "zona de colegio"
+    ],
+    "zona rural": [
+        "zona campestre"
+    ],
+    "zona urbana": [
+        "área metropolitana"
+    ],
+    "casco": [
+        "cascote",
+        "cachucha",
+        "protector de cabeza"
+    ],
+    "parqueo": [
+        "aparqueo",
+        "parqueadero",
+        "estacionar"
+    ],
+    "grapas": [
+        "pinzas",
+        "sujetadores",
+        "grapadoras"
+    ],
+    "engrapar": [
+        "clavarles grapas",
+        "pinchar ruedas",
+        "amarillar"
+    ],
+    "inmovilizarlo": [
+        "trancar",
+        "engrapar",
+        "fijar",
+        "amarrar",
+        "pincharle ruedas"
+    ],
+    "ratito": [
+        "ratico",
+        "momentito",
+        "toquecito"
+    ],
+    "obligatorio": [
+        "mandatorio",
+        "forzoso",
+        "imperativo"
+    ],
+    "batida": [
+        "redada",
+        "control policial",
+        "operativo"
+    ],
+    "fuga": [
+        "escapada",
+        "huída",
+        "sálida corriendo"
+    ],
+    "coima": [
+        "mordida",
+        "moche",
+        "coto",
+        "soborno",
+        "plata bajo mesa"
     ]
 }
