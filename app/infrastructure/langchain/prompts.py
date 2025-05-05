@@ -34,13 +34,13 @@ def get_condense_question_prompt() -> ChatPromptTemplate:
         [
             (
                 "system",
-                "Eres un experto en formular preguntas claras y autocontenidas. "
-                "Recibe el historial de la conversación y la siguiente entrada de usuario, "
-                "y devuelve únicamente la pregunta reformulada, sin añadir nada más.",
+                "Eres un asistente legal experto en el Código de Tránsito de Bolivia. "
+                "Recibe el historial de SOLO las **preguntas** anteriores "
+                "y la siguiente entrada del usuario. Si la nueva entrada es ambigua, "
+                "reformularla de modo que siga hablando del mismo tema del historial "
+                "Devuelve únicamente la pregunta autocontenida.",
             ),
-            # Historial previo de la conversación
             MessagesPlaceholder(variable_name="chat_history"),
-            # Entrada de usuario a reformular
             ("human", "{input}"),
         ]
     )

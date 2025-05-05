@@ -69,11 +69,15 @@ class RagEngine(IRetrievalEngine):
           5) Devuelve QueryResponse.
         """
         try:
+            # antes de invoke:
+            user_only_history = [
+                m for m in self.chat_history if isinstance(m, HumanMessage)
+            ]
             # Ejecutar la cadena conversacional: reformulación + recuperación + generación
             result = self.chain.invoke(
                 {
                     "input": query,
-                    "chat_history": self.chat_history,
+                    "chat_history": user_only_history,
                 }
             )
         except Exception as e:
